@@ -41,11 +41,16 @@ int main() {
 			buffer[0] != RARE_STEAL_CHANCE_ORIGINAL_0 ||
 			buffer[1] != RARE_STEAL_CHANCE_ORIGINAL_1 ||
 			buffer[2] != RARE_STEAL_CHANCE_ORIGINAL_2;
+		readFromMemory(fd, ADDED_STEAL_LOCATION, 3, buffer);
+		const bool isAddedStealToggled =
+			buffer[0] != ADDED_STEAL_ORIGINAL_0 ||
+			buffer[1] != ADDED_STEAL_ORIGINAL_1;
 
 
 		printf("\n");
 		printf("1) toggle steal success rate (%c)\n", isStealSuccessRateToggled ? 'y' : 'n');
 		printf("2) toggle rare steal success rate (%c)\n", isRareStealSuccessRateToggled ? 'y' : 'n');
+		printf("3) toggle added steal (%c)\n", isAddedStealToggled ? 'y' : 'n');
 		printf("e(x)it\n");
 		const uint8_t c = getchar();
 		if (c == 'x') {
@@ -87,6 +92,20 @@ int main() {
 						                       RARE_STEAL_CHANCE_NEW_2,
 					                       };
 				writeToMemory(fd, RARE_STEAL_CHANCE_LOCATION, 3, bytes);
+				break;
+			}
+			case '3': {
+				const uint8_t *bytes = isAddedStealToggled
+					                       ? (const uint8_t[2]){
+						                       ADDED_STEAL_ORIGINAL_0,
+						                       ADDED_STEAL_ORIGINAL_1,
+					                       }
+					                       : (const uint8_t[2]){
+						                       ADDED_STEAL_NEW_0,
+						                       ADDED_STEAL_NEW_1,
+					                       };
+				writeToMemory(fd, ADDED_STEAL_LOCATION, 2, bytes);
+				break;
 			}
 			default:
 				break;
