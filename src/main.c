@@ -45,12 +45,15 @@ int main() {
 		const bool isAddedStealToggled =
 			buffer[0] != ADDED_STEAL_ORIGINAL_0 ||
 			buffer[1] != ADDED_STEAL_ORIGINAL_1;
+		readFromMemory(fd, LULU_STARTING_FURY_COUNT_LOCATION, 1, buffer);
+		const bool isPerfectFuryToggled = buffer[0] != LULU_STARTING_FURY_COUNT_ORIGINAL_0;
 
 
 		printf("\n");
 		printf("1) toggle steal success rate (%c)\n", isStealSuccessRateToggled ? 'y' : 'n');
 		printf("2) toggle rare steal success rate (%c)\n", isRareStealSuccessRateToggled ? 'y' : 'n');
 		printf("3) toggle added steal (%c)\n", isAddedStealToggled ? 'y' : 'n');
+		printf("4) toggle perfect Fury (%c)\n", isPerfectFuryToggled ? 'y' : 'n');
 		printf("e(x)it\n");
 		const uint8_t c = getchar();
 		if (c == 'x') {
@@ -105,6 +108,13 @@ int main() {
 						                       ADDED_STEAL_NEW_1,
 					                       };
 				writeToMemory(fd, ADDED_STEAL_LOCATION, 2, bytes);
+				break;
+			}
+			case '4': {
+				const uint8_t *bytes = isPerfectFuryToggled
+					                       ? (const uint8_t[1]){LULU_STARTING_FURY_COUNT_ORIGINAL_0}
+					                       : (const uint8_t[1]){LULU_STARTING_FURY_COUNT_NEW_0};
+				writeToMemory(fd, LULU_STARTING_FURY_COUNT_LOCATION, 1, bytes);
 				break;
 			}
 			default:
