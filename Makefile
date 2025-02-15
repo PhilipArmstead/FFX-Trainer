@@ -23,7 +23,7 @@ INC_FLAGS := $(addprefix -I,$(INC_DIRS))
 
 CC := clang
 CCFLAGS += -std=gnu99 -Wall -Werror -Wno-pointer-sign
-LDFLAGS := $(LDFLAGS) -lm
+LDFLAGS := $(LDFLAGS) -lm -lraylib
 
 # The final build step.
 all:
