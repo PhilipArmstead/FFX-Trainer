@@ -21,6 +21,8 @@ int main() {
 	char battleCountString[8];
 	char tidusKillCountString[8];
 	char tidusVictoriesCountString[8];
+	char rikkuKillCountString[8];
+	char rikkuVictoriesCountString[8];
 	bool isStealSuccessRateToggled = false;
 	bool isRareStealSuccessRateToggled = false;
 	bool isAddedStealToggled = false;
@@ -153,6 +155,10 @@ int main() {
 			snprintf(tidusKillCountString, 8, "%lu", hexBytesToInt(buffer, 4));
 			readFromMemory(fd, TIDUS_VICTORIES_LOCATION, 4, buffer);
 			snprintf(tidusVictoriesCountString, 8, "%lu", hexBytesToInt(buffer, 4));
+			readFromMemory(fd, RIKKU_KILLS_LOCATION, 4, buffer);
+			snprintf(rikkuKillCountString, 8, "%lu", hexBytesToInt(buffer, 4));
+			readFromMemory(fd, RIKKU_VICTORIES_LOCATION, 4, buffer);
+			snprintf(rikkuVictoriesCountString, 8, "%lu", hexBytesToInt(buffer, 4));
 
 			readFromMemory(fd, STEAL_CHANCE_LOCATION, 4, buffer);
 			isStealSuccessRateToggled =
@@ -201,6 +207,22 @@ int main() {
 			dataRectangle.y + (dataRectangle.height + 8) * 2,
 			16,
 			BLUE
+		);
+		DrawText("Rikku kills:", dataRectangle.x - 20, dataRectangle.y + (dataRectangle.height + 8) * 3, 16, BLACK);
+		DrawText(
+			rikkuKillCountString,
+			dataRectangle.x + dataRectangle.width,
+			dataRectangle.y + (dataRectangle.height + 8) * 3,
+			16,
+			GREEN
+		);
+		DrawText("Rikku victories:", dataRectangle.x - 60, dataRectangle.y + (dataRectangle.height + 8) * 4, 16, BLACK);
+		DrawText(
+			rikkuVictoriesCountString,
+			dataRectangle.x + dataRectangle.width,
+			dataRectangle.y + (dataRectangle.height + 8) * 4,
+			16,
+			GREEN
 		);
 
 		// Draw hack texts
