@@ -174,6 +174,10 @@ int main() {
 			snprintf(kills.lulu, 8, "%lu", hexBytesToInt(buffer, 4));
 			readFromMemory(fd, LULU_VICTORIES_LOCATION, 4, buffer);
 			snprintf(victories.lulu, 8, "%lu", hexBytesToInt(buffer, 4));
+			readFromMemory(fd, KIMAHRI_KILLS_LOCATION, 4, buffer);
+			snprintf(kills.kimahri, 8, "%lu", hexBytesToInt(buffer, 4));
+			readFromMemory(fd, KIMAHRI_VICTORIES_LOCATION, 4, buffer);
+			snprintf(victories.kimahri, 8, "%lu", hexBytesToInt(buffer, 4));
 			readFromMemory(fd, RIKKU_KILLS_LOCATION, 4, buffer);
 			snprintf(kills.rikku, 8, "%lu", hexBytesToInt(buffer, 4));
 			readFromMemory(fd, RIKKU_VICTORIES_LOCATION, 4, buffer);
@@ -220,7 +224,7 @@ int main() {
 			dataRectangle.x + dataRectangle.width,
 			dataRectangle.y + (dataRectangle.height + 8) * i++,
 			16,
-			BLUE
+			SKYBLUE
 		);
 		DrawText("Tidus victories:", dataRectangle.x - 60, dataRectangle.y + (dataRectangle.height + 8) * i, 16, BLACK);
 		DrawText(
@@ -228,7 +232,7 @@ int main() {
 			dataRectangle.x + dataRectangle.width,
 			dataRectangle.y + (dataRectangle.height + 8) * i++,
 			16,
-			BLUE
+			SKYBLUE
 		);
 		DrawText("Yuna kills:", dataRectangle.x - 20, dataRectangle.y + (dataRectangle.height + 8) * i, 16, BLACK);
 		DrawText(
@@ -277,6 +281,22 @@ int main() {
 			dataRectangle.y + (dataRectangle.height + 8) * i++,
 			16,
 			BLACK
+		);
+		DrawText("Kimahri kills:", dataRectangle.x - 35, dataRectangle.y + (dataRectangle.height + 8) * i, 16, BLACK);
+		DrawText(
+			kills.kimahri,
+			dataRectangle.x + dataRectangle.width,
+			dataRectangle.y + (dataRectangle.height + 8) * i++,
+			16,
+			BLUE
+		);
+		DrawText("Kimahri victories:", dataRectangle.x - 75, dataRectangle.y + (dataRectangle.height + 8) * i, 16, BLACK);
+		DrawText(
+			victories.kimahri,
+			dataRectangle.x + dataRectangle.width,
+			dataRectangle.y + (dataRectangle.height + 8) * i++,
+			16,
+			BLUE
 		);
 		DrawText("Rikku kills:", dataRectangle.x - 20, dataRectangle.y + (dataRectangle.height + 8) * i, 16, BLACK);
 		DrawText(
