@@ -9,6 +9,15 @@
 #include "window.h"
 
 
+typedef struct {
+	char tidus[8];
+	char yuna[8];
+	char wakka[8];
+	char lulu[8];
+	char kimahri[8];
+	char rikku[8];
+} CharacterString;
+
 int main() {
 	int fd = getProcessFileDescriptor();
 
@@ -19,10 +28,8 @@ int main() {
 
 	uint16_t framesSinceDataUpdate = 300;
 	char battleCountString[8];
-	char tidusKillCountString[8];
-	char tidusVictoriesCountString[8];
-	char rikkuKillCountString[8];
-	char rikkuVictoriesCountString[8];
+	CharacterString kills;
+	CharacterString victories;
 	bool isStealSuccessRateToggled = false;
 	bool isRareStealSuccessRateToggled = false;
 	bool isAddedStealToggled = false;
@@ -152,13 +159,25 @@ int main() {
 			readFromMemory(fd, TOTAL_BATTLES_LOCATION, 4, buffer);
 			snprintf(battleCountString, 8, "%lu", hexBytesToInt(buffer, 4));
 			readFromMemory(fd, TIDUS_KILLS_LOCATION, 4, buffer);
-			snprintf(tidusKillCountString, 8, "%lu", hexBytesToInt(buffer, 4));
+			snprintf(kills.tidus, 8, "%lu", hexBytesToInt(buffer, 4));
 			readFromMemory(fd, TIDUS_VICTORIES_LOCATION, 4, buffer);
-			snprintf(tidusVictoriesCountString, 8, "%lu", hexBytesToInt(buffer, 4));
+			snprintf(victories.tidus, 8, "%lu", hexBytesToInt(buffer, 4));
+			readFromMemory(fd, YUNA_KILLS_LOCATION, 4, buffer);
+			snprintf(kills.yuna, 8, "%lu", hexBytesToInt(buffer, 4));
+			readFromMemory(fd, YUNA_VICTORIES_LOCATION, 4, buffer);
+			snprintf(victories.yuna, 8, "%lu", hexBytesToInt(buffer, 4));
+			readFromMemory(fd, WAKKA_KILLS_LOCATION, 4, buffer);
+			snprintf(kills.wakka, 8, "%lu", hexBytesToInt(buffer, 4));
+			readFromMemory(fd, WAKKA_VICTORIES_LOCATION, 4, buffer);
+			snprintf(victories.wakka, 8, "%lu", hexBytesToInt(buffer, 4));
+			readFromMemory(fd, LULU_KILLS_LOCATION, 4, buffer);
+			snprintf(kills.lulu, 8, "%lu", hexBytesToInt(buffer, 4));
+			readFromMemory(fd, LULU_VICTORIES_LOCATION, 4, buffer);
+			snprintf(victories.lulu, 8, "%lu", hexBytesToInt(buffer, 4));
 			readFromMemory(fd, RIKKU_KILLS_LOCATION, 4, buffer);
-			snprintf(rikkuKillCountString, 8, "%lu", hexBytesToInt(buffer, 4));
+			snprintf(kills.rikku, 8, "%lu", hexBytesToInt(buffer, 4));
 			readFromMemory(fd, RIKKU_VICTORIES_LOCATION, 4, buffer);
-			snprintf(rikkuVictoriesCountString, 8, "%lu", hexBytesToInt(buffer, 4));
+			snprintf(victories.rikku, 8, "%lu", hexBytesToInt(buffer, 4));
 
 			readFromMemory(fd, STEAL_CHANCE_LOCATION, 4, buffer);
 			isStealSuccessRateToggled =
@@ -183,6 +202,7 @@ int main() {
 			addedStealColour = isAddedStealToggled ? GREEN : BLACK;
 			perfectFuryColour = isPerfectFuryToggled ? GREEN : BLACK;
 		}
+
 		// Print game data
 		const Rectangle16 dataRectangle = {
 			.height = 18,
@@ -192,35 +212,85 @@ int main() {
 		};
 		DrawText("Battles:", dataRectangle.x, dataRectangle.y, 16, BLACK);
 		DrawText(battleCountString, dataRectangle.x + dataRectangle.width, dataRectangle.y, 16, BLACK);
-		DrawText("Tidus kills:", dataRectangle.x - 20, dataRectangle.y + dataRectangle.height + 8, 16, BLACK);
+
+		uint8_t i = 1;
+		DrawText("Tidus kills:", dataRectangle.x - 20, dataRectangle.y + (dataRectangle.height + 8) * i, 16, BLACK);
 		DrawText(
-			tidusKillCountString,
+			kills.tidus,
 			dataRectangle.x + dataRectangle.width,
-			dataRectangle.y + dataRectangle.height + 8,
+			dataRectangle.y + (dataRectangle.height + 8) * i++,
 			16,
 			BLUE
 		);
-		DrawText("Tidus victories:", dataRectangle.x - 60, dataRectangle.y + (dataRectangle.height + 8) * 2, 16, BLACK);
+		DrawText("Tidus victories:", dataRectangle.x - 60, dataRectangle.y + (dataRectangle.height + 8) * i, 16, BLACK);
 		DrawText(
-			tidusVictoriesCountString,
+			victories.tidus,
 			dataRectangle.x + dataRectangle.width,
-			dataRectangle.y + (dataRectangle.height + 8) * 2,
+			dataRectangle.y + (dataRectangle.height + 8) * i++,
 			16,
 			BLUE
 		);
-		DrawText("Rikku kills:", dataRectangle.x - 20, dataRectangle.y + (dataRectangle.height + 8) * 3, 16, BLACK);
+		DrawText("Yuna kills:", dataRectangle.x - 20, dataRectangle.y + (dataRectangle.height + 8) * i, 16, BLACK);
 		DrawText(
-			rikkuKillCountString,
+			kills.yuna,
 			dataRectangle.x + dataRectangle.width,
-			dataRectangle.y + (dataRectangle.height + 8) * 3,
+			dataRectangle.y + (dataRectangle.height + 8) * i++,
+			16,
+			GRAY
+		);
+		DrawText("Yuna victories:", dataRectangle.x - 60, dataRectangle.y + (dataRectangle.height + 8) * i, 16, BLACK);
+		DrawText(
+			victories.yuna,
+			dataRectangle.x + dataRectangle.width,
+			dataRectangle.y + (dataRectangle.height + 8) * i++,
+			16,
+			GRAY
+		);
+		DrawText("Wakka kills:", dataRectangle.x - 30, dataRectangle.y + (dataRectangle.height + 8) * i, 16, BLACK);
+		DrawText(
+			kills.wakka,
+			dataRectangle.x + dataRectangle.width,
+			dataRectangle.y + (dataRectangle.height + 8) * i++,
+			16,
+			ORANGE
+		);
+		DrawText("Wakka victories:", dataRectangle.x - 68, dataRectangle.y + (dataRectangle.height + 8) * i, 16, BLACK);
+		DrawText(
+			victories.wakka,
+			dataRectangle.x + dataRectangle.width,
+			dataRectangle.y + (dataRectangle.height + 8) * i++,
+			16,
+			ORANGE
+		);
+		DrawText("Lulu kills:", dataRectangle.x - 15, dataRectangle.y + (dataRectangle.height + 8) * i, 16, BLACK);
+		DrawText(
+			kills.lulu,
+			dataRectangle.x + dataRectangle.width,
+			dataRectangle.y + (dataRectangle.height + 8) * i++,
+			16,
+			BLACK
+		);
+		DrawText("Lulu victories:", dataRectangle.x - 55, dataRectangle.y + (dataRectangle.height + 8) * i, 16, BLACK);
+		DrawText(
+			victories.lulu,
+			dataRectangle.x + dataRectangle.width,
+			dataRectangle.y + (dataRectangle.height + 8) * i++,
+			16,
+			BLACK
+		);
+		DrawText("Rikku kills:", dataRectangle.x - 20, dataRectangle.y + (dataRectangle.height + 8) * i, 16, BLACK);
+		DrawText(
+			kills.rikku,
+			dataRectangle.x + dataRectangle.width,
+			dataRectangle.y + (dataRectangle.height + 8) * i++,
 			16,
 			GREEN
 		);
-		DrawText("Rikku victories:", dataRectangle.x - 60, dataRectangle.y + (dataRectangle.height + 8) * 4, 16, BLACK);
+		DrawText("Rikku victories:", dataRectangle.x - 60, dataRectangle.y + (dataRectangle.height + 8) * i, 16, BLACK);
 		DrawText(
-			rikkuVictoriesCountString,
+			victories.rikku,
 			dataRectangle.x + dataRectangle.width,
-			dataRectangle.y + (dataRectangle.height + 8) * 4,
+			dataRectangle.y + (dataRectangle.height + 8) * i++,
 			16,
 			GREEN
 		);
