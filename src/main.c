@@ -12,9 +12,10 @@
 typedef struct {
 	char tidus[8];
 	char yuna[8];
+	char auron[8];
+	char kimahri[8];
 	char wakka[8];
 	char lulu[8];
-	char kimahri[8];
 	char rikku[8];
 } CharacterString;
 
@@ -166,6 +167,15 @@ int main() {
 			snprintf(kills.yuna, 8, "%lu", hexBytesToInt(buffer, 4));
 			readFromMemory(fd, YUNA_VICTORIES_LOCATION, 4, buffer);
 			snprintf(victories.yuna, 8, "%lu", hexBytesToInt(buffer, 4));
+			readFromMemory(fd, AURON_KILLS_LOCATION, 4, buffer);
+			snprintf(kills.auron, 8, "%lu", hexBytesToInt(buffer, 4));
+			readFromMemory(fd, AURON_VICTORIES_LOCATION, 4, buffer);
+			snprintf(victories.auron, 8, "%lu", hexBytesToInt(buffer, 4));
+			readFromMemory(fd, KIMAHRI_KILLS_LOCATION, 4, buffer);
+			snprintf(kills.kimahri, 8, "%lu", hexBytesToInt(buffer, 4));
+			readFromMemory(fd, KIMAHRI_VICTORIES_LOCATION, 4, buffer);
+			snprintf(victories.kimahri, 8, "%lu", hexBytesToInt(buffer, 4));
+			readFromMemory(fd, RIKKU_KILLS_LOCATION, 4, buffer);
 			readFromMemory(fd, WAKKA_KILLS_LOCATION, 4, buffer);
 			snprintf(kills.wakka, 8, "%lu", hexBytesToInt(buffer, 4));
 			readFromMemory(fd, WAKKA_VICTORIES_LOCATION, 4, buffer);
@@ -174,11 +184,6 @@ int main() {
 			snprintf(kills.lulu, 8, "%lu", hexBytesToInt(buffer, 4));
 			readFromMemory(fd, LULU_VICTORIES_LOCATION, 4, buffer);
 			snprintf(victories.lulu, 8, "%lu", hexBytesToInt(buffer, 4));
-			readFromMemory(fd, KIMAHRI_KILLS_LOCATION, 4, buffer);
-			snprintf(kills.kimahri, 8, "%lu", hexBytesToInt(buffer, 4));
-			readFromMemory(fd, KIMAHRI_VICTORIES_LOCATION, 4, buffer);
-			snprintf(victories.kimahri, 8, "%lu", hexBytesToInt(buffer, 4));
-			readFromMemory(fd, RIKKU_KILLS_LOCATION, 4, buffer);
 			snprintf(kills.rikku, 8, "%lu", hexBytesToInt(buffer, 4));
 			readFromMemory(fd, RIKKU_VICTORIES_LOCATION, 4, buffer);
 			snprintf(victories.rikku, 8, "%lu", hexBytesToInt(buffer, 4));
@@ -249,6 +254,22 @@ int main() {
 			dataRectangle.y + (dataRectangle.height + 8) * i++,
 			16,
 			GRAY
+		);
+		DrawText("Auron kills:", dataRectangle.x - 30, dataRectangle.y + (dataRectangle.height + 8) * i, 16, BLACK);
+		DrawText(
+			kills.auron,
+			dataRectangle.x + dataRectangle.width,
+			dataRectangle.y + (dataRectangle.height + 8) * i++,
+			16,
+			RED
+		);
+		DrawText("Auron victories:", dataRectangle.x - 70, dataRectangle.y + (dataRectangle.height + 8) * i, 16, BLACK);
+		DrawText(
+			victories.auron,
+			dataRectangle.x + dataRectangle.width,
+			dataRectangle.y + (dataRectangle.height + 8) * i++,
+			16,
+			RED
 		);
 		DrawText("Wakka kills:", dataRectangle.x - 30, dataRectangle.y + (dataRectangle.height + 8) * i, 16, BLACK);
 		DrawText(
