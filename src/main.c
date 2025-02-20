@@ -28,9 +28,9 @@ int main() {
 	window_create(SCREEN_WIDTH, SCREEN_HEIGHT, FPS, "FFX Trainer");
 
 	uint16_t framesSinceDataUpdate = 300;
-	char battleCountString[8];
-	CharacterString kills;
-	CharacterString victories;
+	char battleCountString[8] = {0};
+	CharacterString kills = {0};
+	CharacterString victories = {0};
 	bool isStealSuccessRateToggled = false;
 	bool isRareStealSuccessRateToggled = false;
 	bool isAddedStealToggled = false;
