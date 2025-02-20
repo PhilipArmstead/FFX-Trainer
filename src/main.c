@@ -32,8 +32,8 @@ int main() {
 	CharacterString kills = {0};
 	CharacterString victories = {0};
 	bool isStealSuccessRateToggled = false;
-	bool isRareStealSuccessRateToggled = false;
 	bool isAddedStealToggled = false;
+	uint8_t rareStealSuccessValue = RARE_STEAL_CHANCE_ORIGINAL_2;
 	uint8_t moreRareDropsValue = MORE_RARE_DROPS_ORIGINAL;
 	bool isPerfectFuryToggled = false;
 	Color stealSuccessRateColour = BLACK;
@@ -79,17 +79,20 @@ int main() {
 					break;
 				}
 				case '2': {
-					const uint8_t *bytes = isRareStealSuccessRateToggled
-						                       ? (const uint8_t[3]){
-							                       RARE_STEAL_CHANCE_ORIGINAL_0,
-							                       RARE_STEAL_CHANCE_ORIGINAL_1,
-							                       RARE_STEAL_CHANCE_ORIGINAL_2,
-						                       }
-						                       : (const uint8_t[3]){
-							                       RARE_STEAL_CHANCE_NEW_0,
-							                       RARE_STEAL_CHANCE_NEW_1,
-							                       RARE_STEAL_CHANCE_NEW_2,
-						                       };
+					uint8_t bytes[3] = {RARE_STEAL_CHANCE_NEW_0, RARE_STEAL_CHANCE_NEW_1};
+					if (rareStealSuccessValue == RARE_STEAL_CHANCE_ORIGINAL_2) {
+						bytes[2] = RARE_STEAL_CHANCE_NEW_2_50_50;
+					} else if (rareStealSuccessValue == RARE_STEAL_CHANCE_NEW_2_50_50) {
+						bytes[0] = 0x39;
+						bytes[2] = 0xc8;
+						bytes[2] = 0x90;
+					} else if (rareStealSuccessValue == RARE_STEAL_CHANCE_NEW_2_ALWAYS) {
+						bytes[2] = RARE_STEAL_CHANCE_NEW_2_NEVER;
+					} else {
+						bytes[0] = RARE_STEAL_CHANCE_ORIGINAL_0;
+						bytes[1] = RARE_STEAL_CHANCE_ORIGINAL_1;
+						bytes[2] = RARE_STEAL_CHANCE_ORIGINAL_2;
+					}
 					writeToMemory(fd, RARE_STEAL_CHANCE_LOCATION, 3, bytes);
 					framesSinceDataUpdate = FPS * 5;
 					break;
@@ -211,11 +214,8 @@ int main() {
 				buffer[1] != STEAL_CHANCE_ORIGINAL_1 ||
 				buffer[2] != STEAL_CHANCE_ORIGINAL_2 ||
 				buffer[3] != STEAL_CHANCE_ORIGINAL_3;
-			readFromMemory(fd, RARE_STEAL_CHANCE_LOCATION, 3, buffer);
-			isRareStealSuccessRateToggled =
-				buffer[0] != RARE_STEAL_CHANCE_ORIGINAL_0 ||
-				buffer[1] != RARE_STEAL_CHANCE_ORIGINAL_1 ||
-				buffer[2] != RARE_STEAL_CHANCE_ORIGINAL_2;
+			readFromMemory(fd, RARE_STEAL_CHANCE_LOCATION + 2, 1, buffer);
+			rareStealSuccessValue = buffer[0];
 			readFromMemory(fd, ADDED_STEAL_LOCATION, 3, buffer);
 			isAddedStealToggled =
 				buffer[0] != ADDED_STEAL_ORIGINAL_0 ||
@@ -226,8 +226,8 @@ int main() {
 			isPerfectFuryToggled = buffer[0] != LULU_STARTING_FURY_COUNT_ORIGINAL_0;
 
 			stealSuccessRateColour = isStealSuccessRateToggled ? GREEN : BLACK;
-			rareStealSuccessRateColour = isRareStealSuccessRateToggled ? GREEN : BLACK;
 			addedStealColour = isAddedStealToggled ? GREEN : BLACK;
+			rareStealSuccessRateColour = rareStealSuccessValue != RARE_STEAL_CHANCE_ORIGINAL_2 ? GREEN : BLACK;
 			moreRareDropsColour = moreRareDropsValue != MORE_RARE_DROPS_ORIGINAL ? GREEN : BLACK;
 			perfectFuryColour = isPerfectFuryToggled ? GREEN : BLACK;
 		}
@@ -362,6 +362,32 @@ int main() {
 		DrawText("3) Toggle added steal", 24, 72, 16, addedStealColour);
 		DrawText("4) Toggle rare drop chance", 24, 96, 16, moreRareDropsColour);
 		DrawText("5) Toggle perfect fury", 24, 120, 16, perfectFuryColour);
+
+		if (rareStealSuccessValue != RARE_STEAL_CHANCE_ORIGINAL_2) {
+			DrawText("(", RARE_DROP_TEXT_WIDTH, 48, 16, BLACK);
+			DrawText(")", RARE_DROP_TEXT_WIDTH + RARE_DROP_50_WIDTH + RARE_DROP_100_WIDTH + 44, 48, 16, BLACK);
+			DrawText(
+				"50%",
+				RARE_DROP_TEXT_WIDTH + 6,
+				48,
+				16,
+				rareStealSuccessValue == RARE_STEAL_CHANCE_NEW_2_50_50 ? GREEN : BLACK
+			);
+			DrawText(
+				"100%",
+				RARE_DROP_TEXT_WIDTH + RARE_DROP_50_WIDTH + 14,
+				48,
+				16,
+				rareStealSuccessValue == RARE_STEAL_CHANCE_NEW_2_ALWAYS ? GREEN : BLACK
+			);
+			DrawText(
+				"0%",
+				RARE_DROP_TEXT_WIDTH + RARE_DROP_50_WIDTH + RARE_DROP_100_WIDTH + 23,
+				48,
+				16,
+				rareStealSuccessValue == RARE_STEAL_CHANCE_NEW_2_NEVER ? GREEN : BLACK
+			);
+		}
 
 		if (moreRareDropsValue != MORE_RARE_DROPS_ORIGINAL) {
 			DrawText("(", RARE_DROP_TEXT_WIDTH, 96, 16, BLACK);
