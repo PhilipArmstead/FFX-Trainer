@@ -33,10 +33,12 @@ int main() {
 	CharacterString victories = {0};
 	bool isStealSuccessRateToggled = false;
 	bool isAddedStealToggled = false;
+	bool isGuaranteedEquipmentToggled = false;
 	uint8_t rareStealSuccessValue = RARE_STEAL_CHANCE_ORIGINAL_2;
 	uint8_t moreRareDropsValue = MORE_RARE_DROPS_ORIGINAL;
 	bool isPerfectFuryToggled = false;
 	Color stealSuccessRateColour = BLACK;
+	Color guaranteedEquipmentColour = BLACK;
 	Color rareStealSuccessRateColour = BLACK;
 	Color addedStealColour = BLACK;
 	Color moreRareDropsColour = BLACK;
@@ -127,6 +129,14 @@ int main() {
 					break;
 				}
 				case '5': {
+					const uint8_t *bytes = isGuaranteedEquipmentToggled
+						                       ? (const uint8_t[1]){ALWAYS_DROP_EQUIPMENT_ORIGINAL}
+						                       : (const uint8_t[1]){ALWAYS_DROP_EQUIPMENT_NEW};
+					writeToMemory(fd, ALWAYS_DROP_EQUIPMENT_LOCATION, 1, bytes);
+					framesSinceDataUpdate = FPS * 5;
+					break;
+				}
+				case '6': {
 					const uint8_t *bytes = isPerfectFuryToggled
 						                       ? (const uint8_t[1]){LULU_STARTING_FURY_COUNT_ORIGINAL_0}
 						                       : (const uint8_t[1]){LULU_STARTING_FURY_COUNT_NEW_0};
@@ -224,10 +234,13 @@ int main() {
 			moreRareDropsValue = buffer[0];
 			readFromMemory(fd, LULU_STARTING_FURY_COUNT_LOCATION, 1, buffer);
 			isPerfectFuryToggled = buffer[0] != LULU_STARTING_FURY_COUNT_ORIGINAL_0;
+			readFromMemory(fd, ALWAYS_DROP_EQUIPMENT_LOCATION, 1, buffer);
+			isGuaranteedEquipmentToggled = buffer[0] != ALWAYS_DROP_EQUIPMENT_ORIGINAL;
 
 			stealSuccessRateColour = isStealSuccessRateToggled ? GREEN : BLACK;
 			addedStealColour = isAddedStealToggled ? GREEN : BLACK;
 			rareStealSuccessRateColour = rareStealSuccessValue != RARE_STEAL_CHANCE_ORIGINAL_2 ? GREEN : BLACK;
+			guaranteedEquipmentColour = isGuaranteedEquipmentToggled ? GREEN : BLACK;
 			moreRareDropsColour = moreRareDropsValue != MORE_RARE_DROPS_ORIGINAL ? GREEN : BLACK;
 			perfectFuryColour = isPerfectFuryToggled ? GREEN : BLACK;
 		}
@@ -361,7 +374,8 @@ int main() {
 		DrawText("2) Toggle rare steal chance", 24, 48, 16, rareStealSuccessRateColour);
 		DrawText("3) Toggle added steal", 24, 72, 16, addedStealColour);
 		DrawText("4) Toggle rare drop chance", 24, 96, 16, moreRareDropsColour);
-		DrawText("5) Toggle perfect fury", 24, 120, 16, perfectFuryColour);
+		DrawText("5) Toggle always drop equipment", 24, 120, 16, guaranteedEquipmentColour);
+		DrawText("6) Toggle perfect fury", 24, 148, 16, perfectFuryColour);
 
 		if (rareStealSuccessValue != RARE_STEAL_CHANCE_ORIGINAL_2) {
 			DrawText("(", RARE_DROP_TEXT_WIDTH, 48, 16, BLACK);
