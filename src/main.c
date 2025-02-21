@@ -31,6 +31,9 @@ int main() {
 	char battleCountString[8] = {0};
 	CharacterString kills = {0};
 	CharacterString victories = {0};
+	uint8_t tidusLimitTimerOriginal[2];
+	bool hasBackedUpTidusLimitOriginal = false;
+	bool isTidusLimitTimerToggled = false;
 	bool isStealSuccessRateToggled = false;
 	bool isAddedStealToggled = false;
 	bool isGuaranteedEquipmentToggled = false;
@@ -43,6 +46,7 @@ int main() {
 	Color addedStealColour = BLACK;
 	Color moreRareDropsColour = BLACK;
 	Color perfectFuryColour = BLACK;
+	Color tidusLimitTimerColour = BLACK;
 
 	const uint16_t loadButtonWidth = 175;
 	const Rectangle16 loadButtonRectangle = {
@@ -64,18 +68,18 @@ int main() {
 			switch (keyPressed) {
 				case '1': {
 					const uint8_t *bytes = isStealSuccessRateToggled
-						                       ? (const uint8_t[4]){
-							                       STEAL_CHANCE_ORIGINAL_0,
-							                       STEAL_CHANCE_ORIGINAL_1,
-							                       STEAL_CHANCE_ORIGINAL_2,
-							                       STEAL_CHANCE_ORIGINAL_3
-						                       }
-						                       : (const uint8_t[4]){
-							                       STEAL_CHANCE_NEW_0,
-							                       STEAL_CHANCE_NEW_1,
-							                       STEAL_CHANCE_NEW_2,
-							                       STEAL_CHANCE_NEW_3
-						                       };
+																	? (const uint8_t[4]){
+																		STEAL_CHANCE_ORIGINAL_0,
+																		STEAL_CHANCE_ORIGINAL_1,
+																		STEAL_CHANCE_ORIGINAL_2,
+																		STEAL_CHANCE_ORIGINAL_3
+																	}
+																	: (const uint8_t[4]){
+																		STEAL_CHANCE_NEW_0,
+																		STEAL_CHANCE_NEW_1,
+																		STEAL_CHANCE_NEW_2,
+																		STEAL_CHANCE_NEW_3
+																	};
 					writeToMemory(fd, STEAL_CHANCE_LOCATION, 4, bytes);
 					framesSinceDataUpdate = FPS * 5;
 					break;
@@ -101,11 +105,11 @@ int main() {
 				}
 				case '3': {
 					const uint8_t *bytes = isAddedStealToggled
-						                       ? (const uint8_t[2]){
-							                       ADDED_STEAL_ORIGINAL_0,
-							                       ADDED_STEAL_ORIGINAL_1,
-						                       }
-						                       : (const uint8_t[2]){NO_OP, NO_OP};
+																	? (const uint8_t[2]){
+																		ADDED_STEAL_ORIGINAL_0,
+																		ADDED_STEAL_ORIGINAL_1,
+																	}
+																	: (const uint8_t[2]){NO_OP, NO_OP};
 					writeToMemory(fd, ADDED_STEAL_LOCATION, 2, bytes);
 					framesSinceDataUpdate = FPS * 5;
 					break;
@@ -127,16 +131,53 @@ int main() {
 				}
 				case '5': {
 					const uint8_t *bytes = isGuaranteedEquipmentToggled
-						                       ? (const uint8_t[1]){ALWAYS_DROP_EQUIPMENT_ORIGINAL}
-						                       : (const uint8_t[1]){ALWAYS_DROP_EQUIPMENT_NEW};
+																	? (const uint8_t[1]){ALWAYS_DROP_EQUIPMENT_ORIGINAL}
+																	: (const uint8_t[1]){ALWAYS_DROP_EQUIPMENT_NEW};
 					writeToMemory(fd, ALWAYS_DROP_EQUIPMENT_LOCATION, 1, bytes);
 					framesSinceDataUpdate = FPS * 5;
 					break;
 				}
 				case '6': {
+					const uint8_t *bytes = isTidusLimitTimerToggled
+																	? (const uint8_t[6]){
+																		TIDUS_LIMIT_TIMER_1_ORIGINAL_0,
+																		TIDUS_LIMIT_TIMER_1_ORIGINAL_1,
+																		TIDUS_LIMIT_TIMER_1_ORIGINAL_2,
+																		TIDUS_LIMIT_TIMER_1_ORIGINAL_3,
+																		tidusLimitTimerOriginal[0],
+																		tidusLimitTimerOriginal[1]
+																	}
+																	: (const uint8_t[6]){NO_OP,NO_OP,NO_OP,NO_OP,NO_OP,NO_OP};
+					writeToMemory(fd, TIDUS_LIMIT_TIMER_1_LOCATION, 6, bytes);
+					bytes = isTidusLimitTimerToggled
+										? (const uint8_t[6]){
+											TIDUS_LIMIT_TIMER_2_ORIGINAL_0,
+											TIDUS_LIMIT_TIMER_2_ORIGINAL_1,
+											TIDUS_LIMIT_TIMER_2_ORIGINAL_2,
+											TIDUS_LIMIT_TIMER_2_ORIGINAL_3,
+											tidusLimitTimerOriginal[0],
+											tidusLimitTimerOriginal[1]
+										}
+										: (const uint8_t[6]){NO_OP,NO_OP,NO_OP,NO_OP,NO_OP,NO_OP};
+					writeToMemory(fd, TIDUS_LIMIT_TIMER_2_LOCATION, 6, bytes);
+					bytes = isTidusLimitTimerToggled
+										? (const uint8_t[6]){
+											TIDUS_LIMIT_TIMER_3_ORIGINAL_0,
+											TIDUS_LIMIT_TIMER_3_ORIGINAL_1,
+											TIDUS_LIMIT_TIMER_3_ORIGINAL_2,
+											TIDUS_LIMIT_TIMER_3_ORIGINAL_3,
+											tidusLimitTimerOriginal[0],
+											tidusLimitTimerOriginal[1]
+										}
+										: (const uint8_t[6]){NO_OP,NO_OP,NO_OP,NO_OP,NO_OP,NO_OP};
+					writeToMemory(fd, TIDUS_LIMIT_TIMER_3_LOCATION, 6, bytes);
+					framesSinceDataUpdate = FPS * 5;
+					break;
+				}
+				case '7': {
 					const uint8_t *bytes = isPerfectFuryToggled
-						                       ? (const uint8_t[1]){LULU_STARTING_FURY_COUNT_ORIGINAL_0}
-						                       : (const uint8_t[1]){LULU_STARTING_FURY_COUNT_NEW_0};
+																	? (const uint8_t[1]){LULU_STARTING_FURY_COUNT_ORIGINAL_0}
+																	: (const uint8_t[1]){LULU_STARTING_FURY_COUNT_NEW_0};
 					writeToMemory(fd, LULU_STARTING_FURY_COUNT_LOCATION, 1, bytes);
 					framesSinceDataUpdate = FPS * 5;
 					break;
@@ -240,6 +281,19 @@ int main() {
 			guaranteedEquipmentColour = isGuaranteedEquipmentToggled ? GREEN : BLACK;
 			moreRareDropsColour = moreRareDropsValue != MORE_RARE_DROPS_ORIGINAL ? GREEN : BLACK;
 			perfectFuryColour = isPerfectFuryToggled ? GREEN : BLACK;
+
+			readFromMemory(fd, TIDUS_LIMIT_TIMER_1_LOCATION, 4, buffer);
+			isTidusLimitTimerToggled =
+				buffer[0] != TIDUS_LIMIT_TIMER_1_ORIGINAL_0 ||
+				buffer[1] != TIDUS_LIMIT_TIMER_1_ORIGINAL_1 ||
+				buffer[2] != TIDUS_LIMIT_TIMER_1_ORIGINAL_2 ||
+				buffer[3] != TIDUS_LIMIT_TIMER_1_ORIGINAL_3;
+			tidusLimitTimerColour = isTidusLimitTimerToggled ? GREEN : BLACK;
+
+			if (!hasBackedUpTidusLimitOriginal) {
+				readFromMemory(fd, TIDUS_LIMIT_TIMER_ORIGINAL_LOCATION, 2, tidusLimitTimerOriginal);
+				hasBackedUpTidusLimitOriginal = true;
+			}
 		}
 
 		// Print game data
@@ -372,7 +426,8 @@ int main() {
 		DrawText("3) Toggle added steal", 24, 72, 16, addedStealColour);
 		DrawText("4) Toggle rare drop chance", 24, 96, 16, moreRareDropsColour);
 		DrawText("5) Toggle always drop equipment", 24, 120, 16, guaranteedEquipmentColour);
-		DrawText("6) Toggle perfect fury", 24, 148, 16, perfectFuryColour);
+		DrawText("6) Toggle perfect swordplay", 24, 144, 16, tidusLimitTimerColour);
+		DrawText("7) Toggle perfect fury", 24, 168, 16, perfectFuryColour);
 
 		if (rareStealSuccessValue != RARE_STEAL_CHANCE_ORIGINAL_2) {
 			DrawText("(", RARE_DROP_TEXT_WIDTH, 48, 16, BLACK);
