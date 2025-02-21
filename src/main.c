@@ -87,8 +87,8 @@ int main() {
 					} else if (rareStealSuccessValue == RARE_STEAL_CHANCE_NEW_2_50_50) {
 						bytes[0] = 0x39;
 						bytes[2] = 0xc8;
-						bytes[2] = 0x90;
-					} else if (rareStealSuccessValue == RARE_STEAL_CHANCE_NEW_2_ALWAYS) {
+						bytes[2] = NO_OP;
+					} else if (rareStealSuccessValue == NO_OP) {
 						bytes[2] = RARE_STEAL_CHANCE_NEW_2_NEVER;
 					} else {
 						bytes[0] = RARE_STEAL_CHANCE_ORIGINAL_0;
@@ -105,10 +105,7 @@ int main() {
 							                       ADDED_STEAL_ORIGINAL_0,
 							                       ADDED_STEAL_ORIGINAL_1,
 						                       }
-						                       : (const uint8_t[2]){
-							                       ADDED_STEAL_NEW_0,
-							                       ADDED_STEAL_NEW_1,
-						                       };
+						                       : (const uint8_t[2]){NO_OP, NO_OP};
 					writeToMemory(fd, ADDED_STEAL_LOCATION, 2, bytes);
 					framesSinceDataUpdate = FPS * 5;
 					break;
@@ -392,7 +389,7 @@ int main() {
 				RARE_DROP_TEXT_WIDTH + RARE_DROP_50_WIDTH + 14,
 				48,
 				16,
-				rareStealSuccessValue == RARE_STEAL_CHANCE_NEW_2_ALWAYS ? GREEN : BLACK
+				rareStealSuccessValue == NO_OP ? GREEN : BLACK
 			);
 			DrawText(
 				"0%",
