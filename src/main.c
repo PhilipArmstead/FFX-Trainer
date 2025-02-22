@@ -40,12 +40,14 @@ int main() {
 	uint8_t rareStealSuccessValue = RARE_STEAL_CHANCE_ORIGINAL_2;
 	uint8_t moreRareDropsValue = MORE_RARE_DROPS_ORIGINAL;
 	bool isPerfectFuryToggled = false;
+	bool isPerfectBushidoToggled = false;
 	Color stealSuccessRateColour = BLACK;
 	Color guaranteedEquipmentColour = BLACK;
 	Color rareStealSuccessRateColour = BLACK;
 	Color addedStealColour = BLACK;
 	Color moreRareDropsColour = BLACK;
 	Color perfectFuryColour = BLACK;
+	Color perfectBushidoColour = BLACK;
 	Color tidusLimitTimerColour = BLACK;
 
 	const uint16_t loadButtonWidth = 175;
@@ -182,6 +184,14 @@ int main() {
 					framesSinceDataUpdate = FPS * 5;
 					break;
 				}
+				case '8': {
+					const uint8_t *bytes = isPerfectBushidoToggled
+																	? (const uint8_t[7]){AURON_PERFECT_LIMIT_ORIGINAL}
+																	: (const uint8_t[7]){AURON_PERFECT_LIMIT_NEW};
+					writeToMemory(fd, AURON_PERFECT_LIMIT_LOCATION, 7, bytes);
+					framesSinceDataUpdate = FPS * 5;
+					break;
+				}
 				default:
 					break;
 			}
@@ -272,6 +282,8 @@ int main() {
 			moreRareDropsValue = buffer[0];
 			readFromMemory(fd, LULU_STARTING_FURY_COUNT_LOCATION, 1, buffer);
 			isPerfectFuryToggled = buffer[0] != LULU_STARTING_FURY_COUNT_ORIGINAL_0;
+			readFromMemory(fd, AURON_PERFECT_LIMIT_LOCATION + 5, 1, buffer);
+			isPerfectBushidoToggled = buffer[0] == NO_OP;
 			readFromMemory(fd, ALWAYS_DROP_EQUIPMENT_LOCATION, 1, buffer);
 			isGuaranteedEquipmentToggled = buffer[0] != ALWAYS_DROP_EQUIPMENT_ORIGINAL;
 
@@ -281,6 +293,7 @@ int main() {
 			guaranteedEquipmentColour = isGuaranteedEquipmentToggled ? GREEN : BLACK;
 			moreRareDropsColour = moreRareDropsValue != MORE_RARE_DROPS_ORIGINAL ? GREEN : BLACK;
 			perfectFuryColour = isPerfectFuryToggled ? GREEN : BLACK;
+			perfectBushidoColour = isPerfectBushidoToggled ? GREEN : BLACK;
 
 			readFromMemory(fd, TIDUS_LIMIT_TIMER_1_LOCATION, 4, buffer);
 			isTidusLimitTimerToggled =
@@ -426,8 +439,9 @@ int main() {
 		DrawText("3) Toggle added steal", 24, 72, 16, addedStealColour);
 		DrawText("4) Toggle rare drop chance", 24, 96, 16, moreRareDropsColour);
 		DrawText("5) Toggle always drop equipment", 24, 120, 16, guaranteedEquipmentColour);
-		DrawText("6) Toggle perfect swordplay", 24, 144, 16, tidusLimitTimerColour);
-		DrawText("7) Toggle perfect fury", 24, 168, 16, perfectFuryColour);
+		DrawText("6) Toggle perfect Swordplay", 24, 144, 16, tidusLimitTimerColour);
+		DrawText("7) Toggle perfect Fury", 24, 168, 16, perfectFuryColour);
+		DrawText("8) Toggle perfect Bushido", 24, 192, 16, perfectBushidoColour);
 
 		if (rareStealSuccessValue != RARE_STEAL_CHANCE_ORIGINAL_2) {
 			DrawText("(", RARE_DROP_TEXT_WIDTH, 48, 16, BLACK);
