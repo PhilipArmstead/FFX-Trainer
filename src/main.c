@@ -178,9 +178,9 @@ int main() {
 				}
 				case '7': {
 					const uint8_t *bytes = isPerfectFuryToggled
-																	? (const uint8_t[1]){LULU_STARTING_FURY_COUNT_ORIGINAL_0}
-																	: (const uint8_t[1]){LULU_STARTING_FURY_COUNT_NEW_0};
-					writeToMemory(fd, LULU_STARTING_FURY_COUNT_LOCATION, 1, bytes);
+																	? (const uint8_t[13]){LULU_PERFECT_LIMIT_ORIGINAL}
+																	: (const uint8_t[13]){LULU_PERFECT_LIMIT_NEW};
+					writeToMemory(fd, LULU_PERFECT_LIMIT_LOCATION, 13, bytes);
 					framesSinceDataUpdate = FPS * 5;
 					break;
 				}
@@ -280,8 +280,8 @@ int main() {
 				buffer[1] != ADDED_STEAL_ORIGINAL_1;
 			readFromMemory(fd, MORE_RARE_DROPS_LOCATION, 1, buffer);
 			moreRareDropsValue = buffer[0];
-			readFromMemory(fd, LULU_STARTING_FURY_COUNT_LOCATION, 1, buffer);
-			isPerfectFuryToggled = buffer[0] != LULU_STARTING_FURY_COUNT_ORIGINAL_0;
+			readFromMemory(fd, LULU_PERFECT_LIMIT_LOCATION + 7, 1, buffer);
+			isPerfectFuryToggled = buffer[0] == NO_OP;
 			readFromMemory(fd, AURON_PERFECT_LIMIT_LOCATION + 5, 1, buffer);
 			isPerfectBushidoToggled = buffer[0] == NO_OP;
 			readFromMemory(fd, ALWAYS_DROP_EQUIPMENT_LOCATION, 1, buffer);
