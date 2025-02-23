@@ -31,9 +31,7 @@ int main() {
 	char battleCountString[8] = {0};
 	CharacterString kills = {0};
 	CharacterString victories = {0};
-	uint8_t tidusLimitTimerOriginal[2];
-	bool hasBackedUpTidusLimitOriginal = false;
-	bool isTidusLimitTimerToggled = false;
+	bool isPerfectSwordplayToggled = false;
 	bool isStealSuccessRateToggled = false;
 	bool isAddedStealToggled = false;
 	bool isGuaranteedEquipmentToggled = false;
@@ -48,7 +46,7 @@ int main() {
 	Color moreRareDropsColour = BLACK;
 	Color perfectFuryColour = BLACK;
 	Color perfectBushidoColour = BLACK;
-	Color tidusLimitTimerColour = BLACK;
+	Color perfectSwordplayColour = BLACK;
 
 	const uint16_t loadButtonWidth = 175;
 	const Rectangle16 loadButtonRectangle = {
@@ -140,39 +138,10 @@ int main() {
 					break;
 				}
 				case '6': {
-					const uint8_t *bytes = isTidusLimitTimerToggled
-																	? (const uint8_t[6]){
-																		TIDUS_LIMIT_TIMER_1_ORIGINAL_0,
-																		TIDUS_LIMIT_TIMER_1_ORIGINAL_1,
-																		TIDUS_LIMIT_TIMER_1_ORIGINAL_2,
-																		TIDUS_LIMIT_TIMER_1_ORIGINAL_3,
-																		tidusLimitTimerOriginal[0],
-																		tidusLimitTimerOriginal[1]
-																	}
-																	: (const uint8_t[6]){NO_OP,NO_OP,NO_OP,NO_OP,NO_OP,NO_OP};
-					writeToMemory(fd, TIDUS_LIMIT_TIMER_1_LOCATION, 6, bytes);
-					bytes = isTidusLimitTimerToggled
-										? (const uint8_t[6]){
-											TIDUS_LIMIT_TIMER_2_ORIGINAL_0,
-											TIDUS_LIMIT_TIMER_2_ORIGINAL_1,
-											TIDUS_LIMIT_TIMER_2_ORIGINAL_2,
-											TIDUS_LIMIT_TIMER_2_ORIGINAL_3,
-											tidusLimitTimerOriginal[0],
-											tidusLimitTimerOriginal[1]
-										}
-										: (const uint8_t[6]){NO_OP,NO_OP,NO_OP,NO_OP,NO_OP,NO_OP};
-					writeToMemory(fd, TIDUS_LIMIT_TIMER_2_LOCATION, 6, bytes);
-					bytes = isTidusLimitTimerToggled
-										? (const uint8_t[6]){
-											TIDUS_LIMIT_TIMER_3_ORIGINAL_0,
-											TIDUS_LIMIT_TIMER_3_ORIGINAL_1,
-											TIDUS_LIMIT_TIMER_3_ORIGINAL_2,
-											TIDUS_LIMIT_TIMER_3_ORIGINAL_3,
-											tidusLimitTimerOriginal[0],
-											tidusLimitTimerOriginal[1]
-										}
-										: (const uint8_t[6]){NO_OP,NO_OP,NO_OP,NO_OP,NO_OP,NO_OP};
-					writeToMemory(fd, TIDUS_LIMIT_TIMER_3_LOCATION, 6, bytes);
+					const uint8_t *bytes = isPerfectSwordplayToggled
+																	? (const uint8_t[6]){TIDUS_PERFECT_LIMIT_ORIGINAL}
+																	: (const uint8_t[6]){TIDUS_PERFECT_LIMIT_NEW};
+					writeToMemory(fd, TIDUS_PERFECT_LIMIT_LOCATION, 6, bytes);
 					framesSinceDataUpdate = FPS * 5;
 					break;
 				}
@@ -280,6 +249,8 @@ int main() {
 				buffer[1] != ADDED_STEAL_ORIGINAL_1;
 			readFromMemory(fd, MORE_RARE_DROPS_LOCATION, 1, buffer);
 			moreRareDropsValue = buffer[0];
+			readFromMemory(fd, TIDUS_PERFECT_LIMIT_LOCATION + 5, 1, buffer);
+			isPerfectSwordplayToggled = buffer[0] == NO_OP;
 			readFromMemory(fd, LULU_PERFECT_LIMIT_LOCATION + 7, 1, buffer);
 			isPerfectFuryToggled = buffer[0] == NO_OP;
 			readFromMemory(fd, AURON_PERFECT_LIMIT_LOCATION + 5, 1, buffer);
@@ -294,19 +265,7 @@ int main() {
 			moreRareDropsColour = moreRareDropsValue != MORE_RARE_DROPS_ORIGINAL ? GREEN : BLACK;
 			perfectFuryColour = isPerfectFuryToggled ? GREEN : BLACK;
 			perfectBushidoColour = isPerfectBushidoToggled ? GREEN : BLACK;
-
-			readFromMemory(fd, TIDUS_LIMIT_TIMER_1_LOCATION, 4, buffer);
-			isTidusLimitTimerToggled =
-				buffer[0] != TIDUS_LIMIT_TIMER_1_ORIGINAL_0 ||
-				buffer[1] != TIDUS_LIMIT_TIMER_1_ORIGINAL_1 ||
-				buffer[2] != TIDUS_LIMIT_TIMER_1_ORIGINAL_2 ||
-				buffer[3] != TIDUS_LIMIT_TIMER_1_ORIGINAL_3;
-			tidusLimitTimerColour = isTidusLimitTimerToggled ? GREEN : BLACK;
-
-			if (!hasBackedUpTidusLimitOriginal) {
-				readFromMemory(fd, TIDUS_LIMIT_TIMER_ORIGINAL_LOCATION, 2, tidusLimitTimerOriginal);
-				hasBackedUpTidusLimitOriginal = true;
-			}
+			perfectSwordplayColour = isPerfectSwordplayToggled ? GREEN : BLACK;
 		}
 
 		// Print game data
@@ -439,7 +398,7 @@ int main() {
 		DrawText("3) Toggle added steal", 24, 72, 16, addedStealColour);
 		DrawText("4) Toggle rare drop chance", 24, 96, 16, moreRareDropsColour);
 		DrawText("5) Toggle always drop equipment", 24, 120, 16, guaranteedEquipmentColour);
-		DrawText("6) Toggle perfect Swordplay", 24, 144, 16, tidusLimitTimerColour);
+		DrawText("6) Toggle perfect Swordplay", 24, 144, 16, perfectSwordplayColour);
 		DrawText("7) Toggle perfect Fury", 24, 168, 16, perfectFuryColour);
 		DrawText("8) Toggle perfect Bushido", 24, 192, 16, perfectBushidoColour);
 
