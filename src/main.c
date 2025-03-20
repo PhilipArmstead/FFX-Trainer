@@ -23,7 +23,7 @@ int main() {
 	int fd = getProcessFileDescriptor();
 
 	const uint16_t SCREEN_WIDTH = 640;
-	const uint16_t SCREEN_HEIGHT = 480;
+	const uint16_t SCREEN_HEIGHT = 420;
 	const uint8_t FPS = 30;
 	window_create(SCREEN_WIDTH, SCREEN_HEIGHT, FPS, "FFX Trainer");
 
@@ -47,6 +47,8 @@ int main() {
 	Color perfectFuryColour = BLACK;
 	Color perfectBushidoColour = BLACK;
 	Color perfectSwordplayColour = BLACK;
+
+	bool isGameRunning = fd != -1;
 
 	const uint16_t loadButtonWidth = 175;
 	const Rectangle16 loadButtonRectangle = {
@@ -174,22 +176,22 @@ int main() {
 			if (mouseX > loadButtonRectangle.x && mouseX < loadButtonRectangle.x + loadButtonRectangle.width && mouseY >
 				loadButtonRectangle.y && mouseY < loadButtonRectangle.y + loadButtonRectangle.height) {
 				fd = getProcessFileDescriptor();
+				isGameRunning = fd != -1;
 			}
 		}
 
 		window_beforeDraw();
 
-		// Draw "Load game" button
-		DrawRectangle(
-			loadButtonRectangle.x,
-			loadButtonRectangle.y,
-			loadButtonRectangle.width,
-			loadButtonRectangle.height,
-			LIGHTGRAY
-		);
-		DrawText("Load game", loadButtonRectangle.x + 8, loadButtonRectangle.y + 4, 30, BLACK);
+		if (!isGameRunning) {
+			DrawRectangle(
+				loadButtonRectangle.x,
+				loadButtonRectangle.y,
+				loadButtonRectangle.width,
+				loadButtonRectangle.height,
+				LIGHTGRAY
+			);
+			DrawText("Load game", loadButtonRectangle.x + 8, loadButtonRectangle.y + 4, 30, BLACK);
 
-		if (fd == -1) {
 			DrawText(
 				"Could not open game",
 				loadButtonRectangle.x + 8 + 20,
@@ -197,200 +199,209 @@ int main() {
 				12,
 				RED
 			);
+		} else {
+			if (framesSinceDataUpdate > FPS * 5) {
+				// These numbers can't both be > 0 and equal.
+				// If they are, it means we've failed to read memory correctly
+				uint8_t buffer[4];
+				readFromMemory(fd, TOTAL_BATTLES_LOCATION, 4, buffer);
+				const uint64_t battleCount = hexBytesToInt(buffer, 4);
+				readFromMemory(fd, YUNA_VICTORIES_LOCATION, 4, buffer);
+				const uint64_t yunaVictories = hexBytesToInt(buffer, 4);
+
+				if (battleCount > 0 && battleCount == yunaVictories) {
+					isGameRunning = false;
+					continue;
+				}
+
+				snprintf(battleCountString, 8, "%lu", battleCount);
+				readFromMemory(fd, TIDUS_KILLS_LOCATION, 4, buffer);
+				snprintf(kills.tidus, 8, "%lu", hexBytesToInt(buffer, 4));
+				readFromMemory(fd, TIDUS_VICTORIES_LOCATION, 4, buffer);
+				snprintf(victories.tidus, 8, "%lu", hexBytesToInt(buffer, 4));
+				readFromMemory(fd, YUNA_KILLS_LOCATION, 4, buffer);
+				snprintf(kills.yuna, 8, "%lu", hexBytesToInt(buffer, 4));
+				snprintf(victories.yuna, 8, "%lu", yunaVictories);
+				readFromMemory(fd, AURON_KILLS_LOCATION, 4, buffer);
+				snprintf(kills.auron, 8, "%lu", hexBytesToInt(buffer, 4));
+				readFromMemory(fd, AURON_VICTORIES_LOCATION, 4, buffer);
+				snprintf(victories.auron, 8, "%lu", hexBytesToInt(buffer, 4));
+				readFromMemory(fd, KIMAHRI_KILLS_LOCATION, 4, buffer);
+				snprintf(kills.kimahri, 8, "%lu", hexBytesToInt(buffer, 4));
+				readFromMemory(fd, KIMAHRI_VICTORIES_LOCATION, 4, buffer);
+				snprintf(victories.kimahri, 8, "%lu", hexBytesToInt(buffer, 4));
+				readFromMemory(fd, RIKKU_KILLS_LOCATION, 4, buffer);
+				readFromMemory(fd, WAKKA_KILLS_LOCATION, 4, buffer);
+				snprintf(kills.wakka, 8, "%lu", hexBytesToInt(buffer, 4));
+				readFromMemory(fd, WAKKA_VICTORIES_LOCATION, 4, buffer);
+				snprintf(victories.wakka, 8, "%lu", hexBytesToInt(buffer, 4));
+				readFromMemory(fd, LULU_KILLS_LOCATION, 4, buffer);
+				snprintf(kills.lulu, 8, "%lu", hexBytesToInt(buffer, 4));
+				readFromMemory(fd, LULU_VICTORIES_LOCATION, 4, buffer);
+				snprintf(victories.lulu, 8, "%lu", hexBytesToInt(buffer, 4));
+				snprintf(kills.rikku, 8, "%lu", hexBytesToInt(buffer, 4));
+				readFromMemory(fd, RIKKU_VICTORIES_LOCATION, 4, buffer);
+				snprintf(victories.rikku, 8, "%lu", hexBytesToInt(buffer, 4));
+
+				readFromMemory(fd, STEAL_CHANCE_LOCATION, 4, buffer);
+				isStealSuccessRateToggled =
+					buffer[0] != STEAL_CHANCE_ORIGINAL_0 ||
+					buffer[1] != STEAL_CHANCE_ORIGINAL_1 ||
+					buffer[2] != STEAL_CHANCE_ORIGINAL_2 ||
+					buffer[3] != STEAL_CHANCE_ORIGINAL_3;
+				readFromMemory(fd, RARE_STEAL_CHANCE_LOCATION + 2, 1, buffer);
+				rareStealSuccessValue = buffer[0];
+				readFromMemory(fd, ADDED_STEAL_LOCATION, 3, buffer);
+				isAddedStealToggled =
+					buffer[0] != ADDED_STEAL_ORIGINAL_0 ||
+					buffer[1] != ADDED_STEAL_ORIGINAL_1;
+				readFromMemory(fd, MORE_RARE_DROPS_LOCATION, 1, buffer);
+				moreRareDropsValue = buffer[0];
+				readFromMemory(fd, TIDUS_PERFECT_LIMIT_LOCATION + 5, 1, buffer);
+				isPerfectSwordplayToggled = buffer[0] == NO_OP;
+				readFromMemory(fd, LULU_PERFECT_LIMIT_LOCATION + 7, 1, buffer);
+				isPerfectFuryToggled = buffer[0] == NO_OP;
+				readFromMemory(fd, AURON_PERFECT_LIMIT_LOCATION + 5, 1, buffer);
+				isPerfectBushidoToggled = buffer[0] == NO_OP;
+				readFromMemory(fd, ALWAYS_DROP_EQUIPMENT_LOCATION, 1, buffer);
+				isGuaranteedEquipmentToggled = buffer[0] != ALWAYS_DROP_EQUIPMENT_ORIGINAL;
+
+				stealSuccessRateColour = isStealSuccessRateToggled ? GREEN : BLACK;
+				addedStealColour = isAddedStealToggled ? GREEN : BLACK;
+				rareStealSuccessRateColour = rareStealSuccessValue != RARE_STEAL_CHANCE_ORIGINAL_2 ? GREEN : BLACK;
+				guaranteedEquipmentColour = isGuaranteedEquipmentToggled ? GREEN : BLACK;
+				moreRareDropsColour = moreRareDropsValue != MORE_RARE_DROPS_ORIGINAL ? GREEN : BLACK;
+				perfectFuryColour = isPerfectFuryToggled ? GREEN : BLACK;
+				perfectBushidoColour = isPerfectBushidoToggled ? GREEN : BLACK;
+				perfectSwordplayColour = isPerfectSwordplayToggled ? GREEN : BLACK;
+
+				framesSinceDataUpdate = 0;
+			}
+
+			// Print game data
+			const Rectangle16 dataRectangle = {
+				.height = 18,
+				.width = 62,
+				.y = loadButtonRectangle.y,
+				.x = SCREEN_WIDTH - 130
+			};
+			DrawText("Battles:", dataRectangle.x, dataRectangle.y, 16, BLACK);
+			DrawText(battleCountString, dataRectangle.x + dataRectangle.width, dataRectangle.y, 16, BLACK);
+
+			uint8_t i = 1;
+			DrawText("Tidus kills:", dataRectangle.x - 20, dataRectangle.y + (dataRectangle.height + 8) * i, 16, BLACK);
+			DrawText(
+				kills.tidus,
+				dataRectangle.x + dataRectangle.width,
+				dataRectangle.y + (dataRectangle.height + 8) * i++,
+				16,
+				SKYBLUE
+			);
+			DrawText("Tidus victories:", dataRectangle.x - 60, dataRectangle.y + (dataRectangle.height + 8) * i, 16, BLACK);
+			DrawText(
+				victories.tidus,
+				dataRectangle.x + dataRectangle.width,
+				dataRectangle.y + (dataRectangle.height + 8) * i++,
+				16,
+				SKYBLUE
+			);
+			DrawText("Yuna kills:", dataRectangle.x - 20, dataRectangle.y + (dataRectangle.height + 8) * i, 16, BLACK);
+			DrawText(
+				kills.yuna,
+				dataRectangle.x + dataRectangle.width,
+				dataRectangle.y + (dataRectangle.height + 8) * i++,
+				16,
+				GRAY
+			);
+			DrawText("Yuna victories:", dataRectangle.x - 60, dataRectangle.y + (dataRectangle.height + 8) * i, 16, BLACK);
+			DrawText(
+				victories.yuna,
+				dataRectangle.x + dataRectangle.width,
+				dataRectangle.y + (dataRectangle.height + 8) * i++,
+				16,
+				GRAY
+			);
+			DrawText("Auron kills:", dataRectangle.x - 30, dataRectangle.y + (dataRectangle.height + 8) * i, 16, BLACK);
+			DrawText(
+				kills.auron,
+				dataRectangle.x + dataRectangle.width,
+				dataRectangle.y + (dataRectangle.height + 8) * i++,
+				16,
+				RED
+			);
+			DrawText("Auron victories:", dataRectangle.x - 70, dataRectangle.y + (dataRectangle.height + 8) * i, 16, BLACK);
+			DrawText(
+				victories.auron,
+				dataRectangle.x + dataRectangle.width,
+				dataRectangle.y + (dataRectangle.height + 8) * i++,
+				16,
+				RED
+			);
+			DrawText("Wakka kills:", dataRectangle.x - 30, dataRectangle.y + (dataRectangle.height + 8) * i, 16, BLACK);
+			DrawText(
+				kills.wakka,
+				dataRectangle.x + dataRectangle.width,
+				dataRectangle.y + (dataRectangle.height + 8) * i++,
+				16,
+				ORANGE
+			);
+			DrawText("Wakka victories:", dataRectangle.x - 68, dataRectangle.y + (dataRectangle.height + 8) * i, 16, BLACK);
+			DrawText(
+				victories.wakka,
+				dataRectangle.x + dataRectangle.width,
+				dataRectangle.y + (dataRectangle.height + 8) * i++,
+				16,
+				ORANGE
+			);
+			DrawText("Lulu kills:", dataRectangle.x - 15, dataRectangle.y + (dataRectangle.height + 8) * i, 16, BLACK);
+			DrawText(
+				kills.lulu,
+				dataRectangle.x + dataRectangle.width,
+				dataRectangle.y + (dataRectangle.height + 8) * i++,
+				16,
+				BLACK
+			);
+			DrawText("Lulu victories:", dataRectangle.x - 55, dataRectangle.y + (dataRectangle.height + 8) * i, 16, BLACK);
+			DrawText(
+				victories.lulu,
+				dataRectangle.x + dataRectangle.width,
+				dataRectangle.y + (dataRectangle.height + 8) * i++,
+				16,
+				BLACK
+			);
+			DrawText("Kimahri kills:", dataRectangle.x - 35, dataRectangle.y + (dataRectangle.height + 8) * i, 16, BLACK);
+			DrawText(
+				kills.kimahri,
+				dataRectangle.x + dataRectangle.width,
+				dataRectangle.y + (dataRectangle.height + 8) * i++,
+				16,
+				BLUE
+			);
+			DrawText("Kimahri victories:", dataRectangle.x - 75, dataRectangle.y + (dataRectangle.height + 8) * i, 16, BLACK);
+			DrawText(
+				victories.kimahri,
+				dataRectangle.x + dataRectangle.width,
+				dataRectangle.y + (dataRectangle.height + 8) * i++,
+				16,
+				BLUE
+			);
+			DrawText("Rikku kills:", dataRectangle.x - 20, dataRectangle.y + (dataRectangle.height + 8) * i, 16, BLACK);
+			DrawText(
+				kills.rikku,
+				dataRectangle.x + dataRectangle.width,
+				dataRectangle.y + (dataRectangle.height + 8) * i++,
+				16,
+				GREEN
+			);
+			DrawText("Rikku victories:", dataRectangle.x - 60, dataRectangle.y + (dataRectangle.height + 8) * i, 16, BLACK);
+			DrawText(
+				victories.rikku,
+				dataRectangle.x + dataRectangle.width,
+				dataRectangle.y + (dataRectangle.height + 8) * i++,
+				16,
+				GREEN
+			);
 		}
-
-		// Update game data
-		if (fd != -1 && framesSinceDataUpdate > FPS * 5) {
-			framesSinceDataUpdate = 0;
-
-			uint8_t buffer[4];
-			readFromMemory(fd, TOTAL_BATTLES_LOCATION, 4, buffer);
-			snprintf(battleCountString, 8, "%lu", hexBytesToInt(buffer, 4));
-			readFromMemory(fd, TIDUS_KILLS_LOCATION, 4, buffer);
-			snprintf(kills.tidus, 8, "%lu", hexBytesToInt(buffer, 4));
-			readFromMemory(fd, TIDUS_VICTORIES_LOCATION, 4, buffer);
-			snprintf(victories.tidus, 8, "%lu", hexBytesToInt(buffer, 4));
-			readFromMemory(fd, YUNA_KILLS_LOCATION, 4, buffer);
-			snprintf(kills.yuna, 8, "%lu", hexBytesToInt(buffer, 4));
-			readFromMemory(fd, YUNA_VICTORIES_LOCATION, 4, buffer);
-			snprintf(victories.yuna, 8, "%lu", hexBytesToInt(buffer, 4));
-			readFromMemory(fd, AURON_KILLS_LOCATION, 4, buffer);
-			snprintf(kills.auron, 8, "%lu", hexBytesToInt(buffer, 4));
-			readFromMemory(fd, AURON_VICTORIES_LOCATION, 4, buffer);
-			snprintf(victories.auron, 8, "%lu", hexBytesToInt(buffer, 4));
-			readFromMemory(fd, KIMAHRI_KILLS_LOCATION, 4, buffer);
-			snprintf(kills.kimahri, 8, "%lu", hexBytesToInt(buffer, 4));
-			readFromMemory(fd, KIMAHRI_VICTORIES_LOCATION, 4, buffer);
-			snprintf(victories.kimahri, 8, "%lu", hexBytesToInt(buffer, 4));
-			readFromMemory(fd, RIKKU_KILLS_LOCATION, 4, buffer);
-			readFromMemory(fd, WAKKA_KILLS_LOCATION, 4, buffer);
-			snprintf(kills.wakka, 8, "%lu", hexBytesToInt(buffer, 4));
-			readFromMemory(fd, WAKKA_VICTORIES_LOCATION, 4, buffer);
-			snprintf(victories.wakka, 8, "%lu", hexBytesToInt(buffer, 4));
-			readFromMemory(fd, LULU_KILLS_LOCATION, 4, buffer);
-			snprintf(kills.lulu, 8, "%lu", hexBytesToInt(buffer, 4));
-			readFromMemory(fd, LULU_VICTORIES_LOCATION, 4, buffer);
-			snprintf(victories.lulu, 8, "%lu", hexBytesToInt(buffer, 4));
-			snprintf(kills.rikku, 8, "%lu", hexBytesToInt(buffer, 4));
-			readFromMemory(fd, RIKKU_VICTORIES_LOCATION, 4, buffer);
-			snprintf(victories.rikku, 8, "%lu", hexBytesToInt(buffer, 4));
-
-			readFromMemory(fd, STEAL_CHANCE_LOCATION, 4, buffer);
-			isStealSuccessRateToggled =
-				buffer[0] != STEAL_CHANCE_ORIGINAL_0 ||
-				buffer[1] != STEAL_CHANCE_ORIGINAL_1 ||
-				buffer[2] != STEAL_CHANCE_ORIGINAL_2 ||
-				buffer[3] != STEAL_CHANCE_ORIGINAL_3;
-			readFromMemory(fd, RARE_STEAL_CHANCE_LOCATION + 2, 1, buffer);
-			rareStealSuccessValue = buffer[0];
-			readFromMemory(fd, ADDED_STEAL_LOCATION, 3, buffer);
-			isAddedStealToggled =
-				buffer[0] != ADDED_STEAL_ORIGINAL_0 ||
-				buffer[1] != ADDED_STEAL_ORIGINAL_1;
-			readFromMemory(fd, MORE_RARE_DROPS_LOCATION, 1, buffer);
-			moreRareDropsValue = buffer[0];
-			readFromMemory(fd, TIDUS_PERFECT_LIMIT_LOCATION + 5, 1, buffer);
-			isPerfectSwordplayToggled = buffer[0] == NO_OP;
-			readFromMemory(fd, LULU_PERFECT_LIMIT_LOCATION + 7, 1, buffer);
-			isPerfectFuryToggled = buffer[0] == NO_OP;
-			readFromMemory(fd, AURON_PERFECT_LIMIT_LOCATION + 5, 1, buffer);
-			isPerfectBushidoToggled = buffer[0] == NO_OP;
-			readFromMemory(fd, ALWAYS_DROP_EQUIPMENT_LOCATION, 1, buffer);
-			isGuaranteedEquipmentToggled = buffer[0] != ALWAYS_DROP_EQUIPMENT_ORIGINAL;
-
-			stealSuccessRateColour = isStealSuccessRateToggled ? GREEN : BLACK;
-			addedStealColour = isAddedStealToggled ? GREEN : BLACK;
-			rareStealSuccessRateColour = rareStealSuccessValue != RARE_STEAL_CHANCE_ORIGINAL_2 ? GREEN : BLACK;
-			guaranteedEquipmentColour = isGuaranteedEquipmentToggled ? GREEN : BLACK;
-			moreRareDropsColour = moreRareDropsValue != MORE_RARE_DROPS_ORIGINAL ? GREEN : BLACK;
-			perfectFuryColour = isPerfectFuryToggled ? GREEN : BLACK;
-			perfectBushidoColour = isPerfectBushidoToggled ? GREEN : BLACK;
-			perfectSwordplayColour = isPerfectSwordplayToggled ? GREEN : BLACK;
-		}
-
-		// Print game data
-		const Rectangle16 dataRectangle = {
-			.height = 18,
-			.width = 62,
-			.y = loadButtonRectangle.y + loadButtonRectangle.height + 16,
-			.x = SCREEN_WIDTH - 130
-		};
-		DrawText("Battles:", dataRectangle.x, dataRectangle.y, 16, BLACK);
-		DrawText(battleCountString, dataRectangle.x + dataRectangle.width, dataRectangle.y, 16, BLACK);
-
-		uint8_t i = 1;
-		DrawText("Tidus kills:", dataRectangle.x - 20, dataRectangle.y + (dataRectangle.height + 8) * i, 16, BLACK);
-		DrawText(
-			kills.tidus,
-			dataRectangle.x + dataRectangle.width,
-			dataRectangle.y + (dataRectangle.height + 8) * i++,
-			16,
-			SKYBLUE
-		);
-		DrawText("Tidus victories:", dataRectangle.x - 60, dataRectangle.y + (dataRectangle.height + 8) * i, 16, BLACK);
-		DrawText(
-			victories.tidus,
-			dataRectangle.x + dataRectangle.width,
-			dataRectangle.y + (dataRectangle.height + 8) * i++,
-			16,
-			SKYBLUE
-		);
-		DrawText("Yuna kills:", dataRectangle.x - 20, dataRectangle.y + (dataRectangle.height + 8) * i, 16, BLACK);
-		DrawText(
-			kills.yuna,
-			dataRectangle.x + dataRectangle.width,
-			dataRectangle.y + (dataRectangle.height + 8) * i++,
-			16,
-			GRAY
-		);
-		DrawText("Yuna victories:", dataRectangle.x - 60, dataRectangle.y + (dataRectangle.height + 8) * i, 16, BLACK);
-		DrawText(
-			victories.yuna,
-			dataRectangle.x + dataRectangle.width,
-			dataRectangle.y + (dataRectangle.height + 8) * i++,
-			16,
-			GRAY
-		);
-		DrawText("Auron kills:", dataRectangle.x - 30, dataRectangle.y + (dataRectangle.height + 8) * i, 16, BLACK);
-		DrawText(
-			kills.auron,
-			dataRectangle.x + dataRectangle.width,
-			dataRectangle.y + (dataRectangle.height + 8) * i++,
-			16,
-			RED
-		);
-		DrawText("Auron victories:", dataRectangle.x - 70, dataRectangle.y + (dataRectangle.height + 8) * i, 16, BLACK);
-		DrawText(
-			victories.auron,
-			dataRectangle.x + dataRectangle.width,
-			dataRectangle.y + (dataRectangle.height + 8) * i++,
-			16,
-			RED
-		);
-		DrawText("Wakka kills:", dataRectangle.x - 30, dataRectangle.y + (dataRectangle.height + 8) * i, 16, BLACK);
-		DrawText(
-			kills.wakka,
-			dataRectangle.x + dataRectangle.width,
-			dataRectangle.y + (dataRectangle.height + 8) * i++,
-			16,
-			ORANGE
-		);
-		DrawText("Wakka victories:", dataRectangle.x - 68, dataRectangle.y + (dataRectangle.height + 8) * i, 16, BLACK);
-		DrawText(
-			victories.wakka,
-			dataRectangle.x + dataRectangle.width,
-			dataRectangle.y + (dataRectangle.height + 8) * i++,
-			16,
-			ORANGE
-		);
-		DrawText("Lulu kills:", dataRectangle.x - 15, dataRectangle.y + (dataRectangle.height + 8) * i, 16, BLACK);
-		DrawText(
-			kills.lulu,
-			dataRectangle.x + dataRectangle.width,
-			dataRectangle.y + (dataRectangle.height + 8) * i++,
-			16,
-			BLACK
-		);
-		DrawText("Lulu victories:", dataRectangle.x - 55, dataRectangle.y + (dataRectangle.height + 8) * i, 16, BLACK);
-		DrawText(
-			victories.lulu,
-			dataRectangle.x + dataRectangle.width,
-			dataRectangle.y + (dataRectangle.height + 8) * i++,
-			16,
-			BLACK
-		);
-		DrawText("Kimahri kills:", dataRectangle.x - 35, dataRectangle.y + (dataRectangle.height + 8) * i, 16, BLACK);
-		DrawText(
-			kills.kimahri,
-			dataRectangle.x + dataRectangle.width,
-			dataRectangle.y + (dataRectangle.height + 8) * i++,
-			16,
-			BLUE
-		);
-		DrawText("Kimahri victories:", dataRectangle.x - 75, dataRectangle.y + (dataRectangle.height + 8) * i, 16, BLACK);
-		DrawText(
-			victories.kimahri,
-			dataRectangle.x + dataRectangle.width,
-			dataRectangle.y + (dataRectangle.height + 8) * i++,
-			16,
-			BLUE
-		);
-		DrawText("Rikku kills:", dataRectangle.x - 20, dataRectangle.y + (dataRectangle.height + 8) * i, 16, BLACK);
-		DrawText(
-			kills.rikku,
-			dataRectangle.x + dataRectangle.width,
-			dataRectangle.y + (dataRectangle.height + 8) * i++,
-			16,
-			GREEN
-		);
-		DrawText("Rikku victories:", dataRectangle.x - 60, dataRectangle.y + (dataRectangle.height + 8) * i, 16, BLACK);
-		DrawText(
-			victories.rikku,
-			dataRectangle.x + dataRectangle.width,
-			dataRectangle.y + (dataRectangle.height + 8) * i++,
-			16,
-			GREEN
-		);
 
 		// Draw hack texts
 		DrawText("1) Toggle 100% steal chance", 24, 24, 16, stealSuccessRateColour);
