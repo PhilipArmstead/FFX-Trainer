@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: © 2025 Phil Armstead <philarmstead@mailbox.org>
+// SPDX-License-Identifier: GPL-3.0-or-later
+
+
 #pragma once
 
 #define TOTAL_BATTLES_LOCATION 0x11307a4
