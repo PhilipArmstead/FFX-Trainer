@@ -173,7 +173,7 @@ int main() {
 		} while (keyPressed != 0);
 
 		// Handle "Load game" button click
-		if (IsMouseButtonPressed(0)) {
+		if (!isGameRunning && IsMouseButtonPressed(0)) {
 			const uint16_t mouseX = GetMouseX();
 			const uint16_t mouseY = GetMouseY();
 
