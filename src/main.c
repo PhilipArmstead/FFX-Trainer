@@ -14,17 +14,22 @@
 
 
 typedef struct {
-	char tidus[8];
-	char yuna[8];
-	char auron[8];
-	char kimahri[8];
-	char wakka[8];
-	char lulu[8];
-	char rikku[8];
+		char tidus[8];
+		char yuna[8];
+		char auron[8];
+		char kimahri[8];
+		char wakka[8];
+		char lulu[8];
+		char rikku[8];
 } CharacterString;
 
 int main() {
+	int pid = 0;
+#ifdef _WIN32
+	HANDLE fd = getProcessFileDescriptor(&pid);
+#else
 	int fd = getProcessFileDescriptor();
+#endif
 
 	const uint16_t SCREEN_WIDTH = 640;
 	const uint16_t SCREEN_HEIGHT = 420;
@@ -52,7 +57,18 @@ int main() {
 	Color perfectBushidoColour = BLACK;
 	Color perfectSwordplayColour = BLACK;
 
+#ifdef _WIN32
+	bool isGameRunning = fd != NULL;
+#else
 	bool isGameRunning = fd != -1;
+#endif
+
+	uintptr_t base = 0;
+#ifdef _WIN32
+	if (isGameRunning) {
+		base = getModuleBaseAddress(pid, "FFX.exe");
+	}
+#endif
 
 	const uint16_t loadButtonWidth = 175;
 	const Rectangle16 loadButtonRectangle = {
@@ -73,20 +89,20 @@ int main() {
 
 			switch (keyPressed) {
 				case '1': {
-					const uint8_t *bytes = isStealSuccessRateToggled
-																	? (const uint8_t[4]){
-																		STEAL_CHANCE_ORIGINAL_0,
-																		STEAL_CHANCE_ORIGINAL_1,
-																		STEAL_CHANCE_ORIGINAL_2,
-																		STEAL_CHANCE_ORIGINAL_3
-																	}
-																	: (const uint8_t[4]){
-																		STEAL_CHANCE_NEW_0,
-																		STEAL_CHANCE_NEW_1,
-																		STEAL_CHANCE_NEW_2,
-																		STEAL_CHANCE_NEW_3
-																	};
-					writeToMemory(fd, STEAL_CHANCE_LOCATION, 4, bytes);
+					uint8_t *bytes = isStealSuccessRateToggled
+					                 ? (uint8_t[4]) {
+							STEAL_CHANCE_ORIGINAL_0,
+							STEAL_CHANCE_ORIGINAL_1,
+							STEAL_CHANCE_ORIGINAL_2,
+							STEAL_CHANCE_ORIGINAL_3
+						}
+					                 : (uint8_t[4]) {
+							STEAL_CHANCE_NEW_0,
+							STEAL_CHANCE_NEW_1,
+							STEAL_CHANCE_NEW_2,
+							STEAL_CHANCE_NEW_3
+						};
+					writeToMemory(fd, base, STEAL_CHANCE_LOCATION, 4, bytes);
 					framesSinceDataUpdate = FPS * 5;
 					break;
 				}
@@ -105,18 +121,18 @@ int main() {
 						bytes[1] = RARE_STEAL_CHANCE_ORIGINAL_1;
 						bytes[2] = RARE_STEAL_CHANCE_ORIGINAL_2;
 					}
-					writeToMemory(fd, RARE_STEAL_CHANCE_LOCATION, 3, bytes);
+					writeToMemory(fd, base, RARE_STEAL_CHANCE_LOCATION, 3, bytes);
 					framesSinceDataUpdate = FPS * 5;
 					break;
 				}
 				case '3': {
-					const uint8_t *bytes = isAddedStealToggled
-																	? (const uint8_t[2]){
-																		ADDED_STEAL_ORIGINAL_0,
-																		ADDED_STEAL_ORIGINAL_1,
-																	}
-																	: (const uint8_t[2]){NO_OP, NO_OP};
-					writeToMemory(fd, ADDED_STEAL_LOCATION, 2, bytes);
+					uint8_t *bytes = isAddedStealToggled
+					                 ? (uint8_t[2]) {
+							ADDED_STEAL_ORIGINAL_0,
+							ADDED_STEAL_ORIGINAL_1,
+						}
+					                 : (uint8_t[2]) {NO_OP, NO_OP};
+					writeToMemory(fd, base, ADDED_STEAL_LOCATION, 2, bytes);
 					framesSinceDataUpdate = FPS * 5;
 					break;
 				}
@@ -131,42 +147,42 @@ int main() {
 					} else {
 						bytes[0] = MORE_RARE_DROPS_ORIGINAL;
 					}
-					writeToMemory(fd, MORE_RARE_DROPS_LOCATION, 1, bytes);
+					writeToMemory(fd, base, MORE_RARE_DROPS_LOCATION, 1, bytes);
 					framesSinceDataUpdate = FPS * 5;
 					break;
 				}
 				case '5': {
-					const uint8_t *bytes = isGuaranteedEquipmentToggled
-																	? (const uint8_t[1]){ALWAYS_DROP_EQUIPMENT_ORIGINAL}
-																	: (const uint8_t[1]){ALWAYS_DROP_EQUIPMENT_NEW};
-					writeToMemory(fd, ALWAYS_DROP_EQUIPMENT_LOCATION, 1, bytes);
+					uint8_t *bytes = isGuaranteedEquipmentToggled
+					                 ? (uint8_t[1]) {ALWAYS_DROP_EQUIPMENT_ORIGINAL}
+					                 : (uint8_t[1]) {ALWAYS_DROP_EQUIPMENT_NEW};
+					writeToMemory(fd, base, ALWAYS_DROP_EQUIPMENT_LOCATION, 1, bytes);
 					framesSinceDataUpdate = FPS * 5;
 					break;
 				}
 				case '6': {
-					const uint8_t *bytes = isPerfectSwordplayToggled
-																	? (const uint8_t[6]){TIDUS_PERFECT_LIMIT_ORIGINAL}
-																	: (const uint8_t[6]){TIDUS_PERFECT_LIMIT_NEW};
-					writeToMemory(fd, TIDUS_PERFECT_LIMIT_LOCATION, 6, bytes);
+					uint8_t *bytes = isPerfectSwordplayToggled
+					                 ? (uint8_t[6]) {TIDUS_PERFECT_LIMIT_ORIGINAL}
+					                 : (uint8_t[6]) {TIDUS_PERFECT_LIMIT_NEW};
+					writeToMemory(fd, base, TIDUS_PERFECT_LIMIT_LOCATION, 6, bytes);
 					framesSinceDataUpdate = FPS * 5;
 					break;
 				}
 				case '7': {
-					const uint8_t *bytes = isPerfectFuryToggled
-																	? (const uint8_t[13]){LULU_PERFECT_LIMIT_ORIGINAL}
-																	: (const uint8_t[13]){LULU_PERFECT_LIMIT_NEW};
-					writeToMemory(fd, LULU_PERFECT_LIMIT_LOCATION, 13, bytes);
+					uint8_t *bytes = isPerfectBushidoToggled
+					                 ? (uint8_t[7]) {AURON_PERFECT_LIMIT_ORIGINAL}
+					                 : (uint8_t[7]) {AURON_PERFECT_LIMIT_NEW};
+					writeToMemory(fd, base, AURON_PERFECT_LIMIT_LOCATION, 7, bytes);
 					framesSinceDataUpdate = FPS * 5;
 					break;
 				}
-				case '8': {
-					const uint8_t *bytes = isPerfectBushidoToggled
-																	? (const uint8_t[7]){AURON_PERFECT_LIMIT_ORIGINAL}
-																	: (const uint8_t[7]){AURON_PERFECT_LIMIT_NEW};
-					writeToMemory(fd, AURON_PERFECT_LIMIT_LOCATION, 7, bytes);
-					framesSinceDataUpdate = FPS * 5;
-					break;
-				}
+//				case '8': {
+//					uint8_t *bytes = isPerfectFuryToggled
+//					                 ? (uint8_t[13]) {LULU_PERFECT_LIMIT_ORIGINAL}
+//					                 : (uint8_t[13]) {LULU_PERFECT_LIMIT_NEW};
+//					writeToMemory(fd, base, LULU_PERFECT_LIMIT_LOCATION, 13, bytes);
+//					framesSinceDataUpdate = FPS * 5;
+//					break;
+//				}
 				default:
 					break;
 			}
@@ -177,10 +193,21 @@ int main() {
 			const uint16_t mouseX = GetMouseX();
 			const uint16_t mouseY = GetMouseY();
 
-			if (mouseX > loadButtonRectangle.x && mouseX < loadButtonRectangle.x + loadButtonRectangle.width && mouseY >
-				loadButtonRectangle.y && mouseY < loadButtonRectangle.y + loadButtonRectangle.height) {
+			if (mouseX > loadButtonRectangle.x &&
+			    mouseX < loadButtonRectangle.x + loadButtonRectangle.width &&
+			    mouseY > loadButtonRectangle.y &&
+			    mouseY < loadButtonRectangle.y + loadButtonRectangle.height) {
+
+#ifdef _WIN32
+				fd = getProcessFileDescriptor(&pid);
+				isGameRunning = fd != NULL;
+				if (isGameRunning) {
+					base = getModuleBaseAddress(pid, "FFX.exe");
+				}
+#else
 				fd = getProcessFileDescriptor();
 				isGameRunning = fd != -1;
+#endif
 			}
 		}
 
@@ -208,9 +235,9 @@ int main() {
 				// These numbers can't both be > 0 and equal.
 				// If they are, it means we've failed to read memory correctly
 				uint8_t buffer[4];
-				readFromMemory(fd, TOTAL_BATTLES_LOCATION, 4, buffer);
+				readFromMemory(fd, base, TOTAL_BATTLES_LOCATION, 4, buffer);
 				const uint64_t battleCount = hexBytesToInt(buffer, 4);
-				readFromMemory(fd, YUNA_VICTORIES_LOCATION, 4, buffer);
+				readFromMemory(fd, base, YUNA_VICTORIES_LOCATION, 4, buffer);
 				const uint64_t yunaVictories = hexBytesToInt(buffer, 4);
 
 				if (battleCount > 0 && battleCount == yunaVictories) {
@@ -219,55 +246,55 @@ int main() {
 				}
 
 				snprintf(battleCountString, 8, "%lu", battleCount);
-				readFromMemory(fd, TIDUS_KILLS_LOCATION, 4, buffer);
+				readFromMemory(fd, base, TIDUS_KILLS_LOCATION, 4, buffer);
 				snprintf(kills.tidus, 8, "%lu", hexBytesToInt(buffer, 4));
-				readFromMemory(fd, TIDUS_VICTORIES_LOCATION, 4, buffer);
+				readFromMemory(fd, base, TIDUS_VICTORIES_LOCATION, 4, buffer);
 				snprintf(victories.tidus, 8, "%lu", hexBytesToInt(buffer, 4));
-				readFromMemory(fd, YUNA_KILLS_LOCATION, 4, buffer);
+				readFromMemory(fd, base, YUNA_KILLS_LOCATION, 4, buffer);
 				snprintf(kills.yuna, 8, "%lu", hexBytesToInt(buffer, 4));
 				snprintf(victories.yuna, 8, "%lu", yunaVictories);
-				readFromMemory(fd, AURON_KILLS_LOCATION, 4, buffer);
+				readFromMemory(fd, base, AURON_KILLS_LOCATION, 4, buffer);
 				snprintf(kills.auron, 8, "%lu", hexBytesToInt(buffer, 4));
-				readFromMemory(fd, AURON_VICTORIES_LOCATION, 4, buffer);
+				readFromMemory(fd, base, AURON_VICTORIES_LOCATION, 4, buffer);
 				snprintf(victories.auron, 8, "%lu", hexBytesToInt(buffer, 4));
-				readFromMemory(fd, KIMAHRI_KILLS_LOCATION, 4, buffer);
+				readFromMemory(fd, base, KIMAHRI_KILLS_LOCATION, 4, buffer);
 				snprintf(kills.kimahri, 8, "%lu", hexBytesToInt(buffer, 4));
-				readFromMemory(fd, KIMAHRI_VICTORIES_LOCATION, 4, buffer);
+				readFromMemory(fd, base, KIMAHRI_VICTORIES_LOCATION, 4, buffer);
 				snprintf(victories.kimahri, 8, "%lu", hexBytesToInt(buffer, 4));
-				readFromMemory(fd, RIKKU_KILLS_LOCATION, 4, buffer);
-				readFromMemory(fd, WAKKA_KILLS_LOCATION, 4, buffer);
+				readFromMemory(fd, base, RIKKU_KILLS_LOCATION, 4, buffer);
+				readFromMemory(fd, base, WAKKA_KILLS_LOCATION, 4, buffer);
 				snprintf(kills.wakka, 8, "%lu", hexBytesToInt(buffer, 4));
-				readFromMemory(fd, WAKKA_VICTORIES_LOCATION, 4, buffer);
+				readFromMemory(fd, base, WAKKA_VICTORIES_LOCATION, 4, buffer);
 				snprintf(victories.wakka, 8, "%lu", hexBytesToInt(buffer, 4));
-				readFromMemory(fd, LULU_KILLS_LOCATION, 4, buffer);
+				readFromMemory(fd, base, LULU_KILLS_LOCATION, 4, buffer);
 				snprintf(kills.lulu, 8, "%lu", hexBytesToInt(buffer, 4));
-				readFromMemory(fd, LULU_VICTORIES_LOCATION, 4, buffer);
+				readFromMemory(fd, base, LULU_VICTORIES_LOCATION, 4, buffer);
 				snprintf(victories.lulu, 8, "%lu", hexBytesToInt(buffer, 4));
 				snprintf(kills.rikku, 8, "%lu", hexBytesToInt(buffer, 4));
-				readFromMemory(fd, RIKKU_VICTORIES_LOCATION, 4, buffer);
+				readFromMemory(fd, base, RIKKU_VICTORIES_LOCATION, 4, buffer);
 				snprintf(victories.rikku, 8, "%lu", hexBytesToInt(buffer, 4));
 
-				readFromMemory(fd, STEAL_CHANCE_LOCATION, 4, buffer);
+				readFromMemory(fd, base, STEAL_CHANCE_LOCATION, 4, buffer);
 				isStealSuccessRateToggled =
 					buffer[0] != STEAL_CHANCE_ORIGINAL_0 ||
 					buffer[1] != STEAL_CHANCE_ORIGINAL_1 ||
 					buffer[2] != STEAL_CHANCE_ORIGINAL_2 ||
 					buffer[3] != STEAL_CHANCE_ORIGINAL_3;
-				readFromMemory(fd, RARE_STEAL_CHANCE_LOCATION + 2, 1, buffer);
+				readFromMemory(fd, base, RARE_STEAL_CHANCE_LOCATION + 2, 1, buffer);
 				rareStealSuccessValue = buffer[0];
-				readFromMemory(fd, ADDED_STEAL_LOCATION, 3, buffer);
+				readFromMemory(fd, base, ADDED_STEAL_LOCATION, 3, buffer);
 				isAddedStealToggled =
 					buffer[0] != ADDED_STEAL_ORIGINAL_0 ||
 					buffer[1] != ADDED_STEAL_ORIGINAL_1;
-				readFromMemory(fd, MORE_RARE_DROPS_LOCATION, 1, buffer);
+				readFromMemory(fd, base, MORE_RARE_DROPS_LOCATION, 1, buffer);
 				moreRareDropsValue = buffer[0];
-				readFromMemory(fd, TIDUS_PERFECT_LIMIT_LOCATION + 5, 1, buffer);
+				readFromMemory(fd, base, TIDUS_PERFECT_LIMIT_LOCATION + 5, 1, buffer);
 				isPerfectSwordplayToggled = buffer[0] == NO_OP;
-				readFromMemory(fd, LULU_PERFECT_LIMIT_LOCATION + 7, 1, buffer);
+				readFromMemory(fd, base, LULU_PERFECT_LIMIT_LOCATION + 7, 1, buffer);
 				isPerfectFuryToggled = buffer[0] == NO_OP;
-				readFromMemory(fd, AURON_PERFECT_LIMIT_LOCATION + 5, 1, buffer);
+				readFromMemory(fd, base, AURON_PERFECT_LIMIT_LOCATION + 5, 1, buffer);
 				isPerfectBushidoToggled = buffer[0] == NO_OP;
-				readFromMemory(fd, ALWAYS_DROP_EQUIPMENT_LOCATION, 1, buffer);
+				readFromMemory(fd, base, ALWAYS_DROP_EQUIPMENT_LOCATION, 1, buffer);
 				isGuaranteedEquipmentToggled = buffer[0] != ALWAYS_DROP_EQUIPMENT_ORIGINAL;
 
 				stealSuccessRateColour = isStealSuccessRateToggled ? GREEN : BLACK;
@@ -414,8 +441,8 @@ int main() {
 		DrawText("4) Toggle rare drop chance", 24, 96, 16, moreRareDropsColour);
 		DrawText("5) Toggle always drop equipment", 24, 120, 16, guaranteedEquipmentColour);
 		DrawText("6) Toggle perfect Swordplay", 24, 144, 16, perfectSwordplayColour);
-		DrawText("7) Toggle perfect Fury", 24, 168, 16, perfectFuryColour);
-		DrawText("8) Toggle perfect Bushido", 24, 192, 16, perfectBushidoColour);
+		DrawText("7) Toggle perfect Bushido", 24, 192, 16, perfectBushidoColour);
+//		DrawText("8) Toggle perfect Fury", 24, 168, 16, perfectFuryColour);
 
 		if (rareStealSuccessValue != RARE_STEAL_CHANCE_ORIGINAL_2) {
 			DrawText("(", RARE_DROP_TEXT_WIDTH, 48, 16, BLACK);
