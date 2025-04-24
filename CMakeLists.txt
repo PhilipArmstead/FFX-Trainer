@@ -1,74 +1,55 @@
 cmake_minimum_required(VERSION 3.14)
-project(Game LANGUAGES C)
+project(FFXTrainer C)
 
-# Set C standard
 set(CMAKE_C_STANDARD 99)
 set(CMAKE_C_STANDARD_REQUIRED ON)
 
-# Set build type (default to Release)
-if(NOT CMAKE_BUILD_TYPE)
-    set(CMAKE_BUILD_TYPE Release)
-endif()
+# Set default build type to Release if not specified
+if (NOT CMAKE_BUILD_TYPE)
+	set(CMAKE_BUILD_TYPE Release CACHE STRING "Build type" FORCE)
+endif ()
 
-# Output directories
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
+# Find or fetch Raylib
+include(FetchContent)
+fetchcontent_declare(
+	raylib
+	GIT_REPOSITORY https://github.com/raysan5/raylib.git
+	GIT_TAG 5.5
+)
 
-# Directories
-set(LIB_DIR ${CMAKE_SOURCE_DIR}/lib)
-set(RAYLIB_DIR ${LIB_DIR}/raylib)
-set(RAYLIB_LIB ${RAYLIB_DIR}/lib/libraylib.a)
-set(RAYLIB_INCLUDE ${RAYLIB_DIR}/include)
+# Check if Raylib is already available
+find_package(raylib QUIET)
+if (NOT raylib_FOUND)
+	message(STATUS "Raylib not found, fetching and building it...")
+	set(BUILD_SHARED_LIBS OFF CACHE BOOL "Build Raylib as a static library" FORCE)
+	fetchcontent_makeavailable(raylib)
+endif ()
 
-# Raylib settings
-set(RAYLIB_VERSION 4.5.0)
+add_compile_options(-Wall -Wextra -Werror -Wno-missing-field-initializers)
+set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG")
+set(CMAKE_CXX_FLAGS_DEBUG "-Og -g")
 
-if(WIN32)
-    set(RAYLIB_URL "https://github.com/raysan5/raylib/releases/download/${RAYLIB_VERSION}/raylib-${RAYLIB_VERSION}_Win64_mingw-w64.zip")
-    set(EXTRA_LIBS opengl32 gdi32 winmm)
-else()
-    set(RAYLIB_URL "https://github.com/raysan5/raylib/archive/refs/tags/${RAYLIB_VERSION}.tar.gz")
-    set(EXTRA_LIBS GL m pthread dl rt X11)
-endif()
+if (CMAKE_BUILD_TYPE STREQUAL "Release")
+	add_compile_options(-Wno-unused-parameter)
+endif ()
 
-# Ensure lib directory exists
-file(MAKE_DIRECTORY ${LIB_DIR})
+# Gather all .c source files
+file(GLOB_RECURSE SRC_FILES "src/*.c")
 
-# Download and extract Raylib if not found
-if(NOT EXISTS ${RAYLIB_DIR})
-    message(STATUS "Downloading Raylib...")
-    file(DOWNLOAD ${RAYLIB_URL} ${CMAKE_BINARY_DIR}/raylib.tar.gz SHOW_PROGRESS)
+# Set up executable targets
+add_executable(main ${SRC_FILES})
+target_include_directories(main PRIVATE ./include ${raylib_SOURCE_DIR}/src)
+target_link_libraries(main PRIVATE raylib)
 
-    execute_process(
-      COMMAND ${CMAKE_COMMAND} -E tar xzf ${CMAKE_BINARY_DIR}/raylib.tar.gz
-      WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
-    )
+# Platform-specific settings
+if (APPLE)
+	set(CMAKE_OSX_ARCHITECTURES "arm64;x86_64" CACHE STRING "Build architectures for macOS" FORCE)
+	target_compile_definitions(main PRIVATE PLATFORM_OSX)
+	target_link_libraries(main PRIVATE "-framework OpenGL -framework Cocoa -framework IOKit -framework CoreVideo")
+elseif (WIN32)
+	target_compile_definitions(main PRIVATE PLATFORM_WINDOWS)
+else ()
+	target_compile_definitions(main PRIVATE PLATFORM_LINUX)
+endif ()
 
-    file(GLOB EXTRACTED_DIR "${CMAKE_BINARY_DIR}/raylib-*")
-    execute_process(COMMAND ${CMAKE_COMMAND} -E rename ${EXTRACTED_DIR} ${RAYLIB_DIR})
-endif()
-
-# Build Raylib if the library file is missing
-if(NOT EXISTS ${RAYLIB_LIB})
-    message(STATUS "Building Raylib...")
-    execute_process(
-      COMMAND make
-      WORKING_DIRECTORY ${RAYLIB_DIR}/src
-    )
-endif()
-
-# Add source files
-file(GLOB SOURCES src/*.c)
-
-# Define the executable
-add_executable(game ${SOURCES})
-
-# Include Raylib headers from lib/raylib/include
-target_include_directories(game PRIVATE ${RAYLIB_INCLUDE})
-
-# Link Raylib and required system libraries
-target_link_libraries(game PRIVATE ${RAYLIB_LIB} ${EXTRA_LIBS})
-
-# Enable debugging symbols in Debug mode
-if(CMAKE_BUILD_TYPE STREQUAL "Debug")
-    target_compile_options(game PRIVATE -g)
-endif()
+message(STATUS "CMake setup complete. Run 'make' or 'cmake --build .' to compile.")
