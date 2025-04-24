@@ -7,28 +7,30 @@
 
 #include "constants.h"
 #include "maths.h"
+#include "memory-constants.h"
 #include "memory.h"
 #include "process.h"
 #include "types.h"
 #include "window.h"
+#include "assets/fonts/FreeSans.ttf.h"
 
 
 typedef struct {
-		char tidus[8];
-		char yuna[8];
-		char auron[8];
-		char kimahri[8];
-		char wakka[8];
-		char lulu[8];
-		char rikku[8];
+	char tidus[8];
+	char yuna[8];
+	char auron[8];
+	char kimahri[8];
+	char wakka[8];
+	char lulu[8];
+	char rikku[8];
 } CharacterString;
 
 int main() {
-	int pid = 0;
 #ifdef _WIN32
+	int pid = 0;
 	HANDLE fd = getProcessFileDescriptor(&pid);
 #else
-	int fd = getProcessFileDescriptor();
+	int64_t fd = getProcessFileDescriptor();
 #endif
 
 	const uint16_t SCREEN_WIDTH = 640;
@@ -40,6 +42,7 @@ int main() {
 	char battleCountString[8] = {0};
 	CharacterString kills = {0};
 	CharacterString victories = {0};
+	// TODO: use bitmask instead of all of these booleans
 	bool isPerfectSwordplayToggled = false;
 	bool isStealSuccessRateToggled = false;
 	bool isAddedStealToggled = false;
@@ -63,7 +66,6 @@ int main() {
 	bool isGameRunning = fd != -1;
 #endif
 
-	uintptr_t base = 0;
 #ifdef _WIN32
 	if (isGameRunning) {
 		base = getModuleBaseAddress(pid, "FFX.exe");
@@ -78,7 +80,17 @@ int main() {
 		.x = SCREEN_WIDTH - loadButtonWidth - 16
 	};
 
+
+	Font font = LoadFontFromMemory(".ttf", FreeSans_ttf, 0, 18, 0, 0);
+	const float fontSize = (float)font.baseSize;
+	const float rareStealTextWidth = MeasureTextEx(font, rareStealString, fontSize, 0).x;
+	const float rareDropTextWidth = MeasureTextEx(font, rareDropString, fontSize, 0).x;
+	const float fiftyPercentWidth = MeasureTextEx(font, "50%", fontSize, 0).x;
+	const float hundredPercentWidth = MeasureTextEx(font, "100%", fontSize, 0).x;
+	const float zeroPercentWidth = MeasureTextEx(font, "0%", fontSize, 0).x;
+
 	while (true) {
+		uintptr_t base = 0;
 		if (WindowShouldClose()) {
 			break;
 		}
@@ -90,13 +102,13 @@ int main() {
 			switch (keyPressed) {
 				case '1': {
 					uint8_t *bytes = isStealSuccessRateToggled
-					                 ? (uint8_t[4]) {
+						? (uint8_t[4]){
 							STEAL_CHANCE_ORIGINAL_0,
 							STEAL_CHANCE_ORIGINAL_1,
 							STEAL_CHANCE_ORIGINAL_2,
 							STEAL_CHANCE_ORIGINAL_3
 						}
-					                 : (uint8_t[4]) {
+						: (uint8_t[4]){
 							STEAL_CHANCE_NEW_0,
 							STEAL_CHANCE_NEW_1,
 							STEAL_CHANCE_NEW_2,
@@ -127,11 +139,11 @@ int main() {
 				}
 				case '3': {
 					uint8_t *bytes = isAddedStealToggled
-					                 ? (uint8_t[2]) {
+						? (uint8_t[2]){
 							ADDED_STEAL_ORIGINAL_0,
 							ADDED_STEAL_ORIGINAL_1,
 						}
-					                 : (uint8_t[2]) {NO_OP, NO_OP};
+						: (uint8_t[2]){NO_OP, NO_OP};
 					writeToMemory(fd, base, ADDED_STEAL_LOCATION, 2, bytes);
 					framesSinceDataUpdate = FPS * 5;
 					break;
@@ -153,36 +165,36 @@ int main() {
 				}
 				case '5': {
 					uint8_t *bytes = isGuaranteedEquipmentToggled
-					                 ? (uint8_t[1]) {ALWAYS_DROP_EQUIPMENT_ORIGINAL}
-					                 : (uint8_t[1]) {ALWAYS_DROP_EQUIPMENT_NEW};
+						? (uint8_t[1]){ALWAYS_DROP_EQUIPMENT_ORIGINAL}
+						: (uint8_t[1]){ALWAYS_DROP_EQUIPMENT_NEW};
 					writeToMemory(fd, base, ALWAYS_DROP_EQUIPMENT_LOCATION, 1, bytes);
 					framesSinceDataUpdate = FPS * 5;
 					break;
 				}
 				case '6': {
 					uint8_t *bytes = isPerfectSwordplayToggled
-					                 ? (uint8_t[6]) {TIDUS_PERFECT_LIMIT_ORIGINAL}
-					                 : (uint8_t[6]) {TIDUS_PERFECT_LIMIT_NEW};
+						? (uint8_t[6]){TIDUS_PERFECT_LIMIT_ORIGINAL}
+						: (uint8_t[6]){TIDUS_PERFECT_LIMIT_NEW};
 					writeToMemory(fd, base, TIDUS_PERFECT_LIMIT_LOCATION, 6, bytes);
 					framesSinceDataUpdate = FPS * 5;
 					break;
 				}
 				case '7': {
 					uint8_t *bytes = isPerfectBushidoToggled
-					                 ? (uint8_t[7]) {AURON_PERFECT_LIMIT_ORIGINAL}
-					                 : (uint8_t[7]) {AURON_PERFECT_LIMIT_NEW};
+						? (uint8_t[7]){AURON_PERFECT_LIMIT_ORIGINAL}
+						: (uint8_t[7]){AURON_PERFECT_LIMIT_NEW};
 					writeToMemory(fd, base, AURON_PERFECT_LIMIT_LOCATION, 7, bytes);
 					framesSinceDataUpdate = FPS * 5;
 					break;
 				}
-//				case '8': {
-//					uint8_t *bytes = isPerfectFuryToggled
-//					                 ? (uint8_t[13]) {LULU_PERFECT_LIMIT_ORIGINAL}
-//					                 : (uint8_t[13]) {LULU_PERFECT_LIMIT_NEW};
-//					writeToMemory(fd, base, LULU_PERFECT_LIMIT_LOCATION, 13, bytes);
-//					framesSinceDataUpdate = FPS * 5;
-//					break;
-//				}
+				case '8': {
+					uint8_t *bytes = isPerfectFuryToggled
+						? (uint8_t[13]){LULU_PERFECT_LIMIT_ORIGINAL}
+						: (uint8_t[13]){LULU_PERFECT_LIMIT_NEW};
+					writeToMemory(fd, base, LULU_PERFECT_LIMIT_LOCATION, 13, bytes);
+					framesSinceDataUpdate = FPS * 5;
+					break;
+				}
 				default:
 					break;
 			}
@@ -194,10 +206,9 @@ int main() {
 			const uint16_t mouseY = GetMouseY();
 
 			if (mouseX > loadButtonRectangle.x &&
-			    mouseX < loadButtonRectangle.x + loadButtonRectangle.width &&
-			    mouseY > loadButtonRectangle.y &&
-			    mouseY < loadButtonRectangle.y + loadButtonRectangle.height) {
-
+				mouseX < loadButtonRectangle.x + loadButtonRectangle.width &&
+				mouseY > loadButtonRectangle.y &&
+				mouseY < loadButtonRectangle.y + loadButtonRectangle.height) {
 #ifdef _WIN32
 				fd = getProcessFileDescriptor(&pid);
 				isGameRunning = fd != NULL;
@@ -316,182 +327,378 @@ int main() {
 				.y = loadButtonRectangle.y,
 				.x = SCREEN_WIDTH - 130
 			};
-			DrawText("Battles:", dataRectangle.x, dataRectangle.y, 16, BLACK);
-			DrawText(battleCountString, dataRectangle.x + dataRectangle.width, dataRectangle.y, 16, BLACK);
+			const float valueX = (float)(dataRectangle.x + dataRectangle.width);
+			DrawTextEx(font, "Battles:", (Vector2){dataRectangle.x, dataRectangle.y}, fontSize, 0, BLACK);
+			DrawTextEx(font, battleCountString, (Vector2){valueX, dataRectangle.y}, fontSize, 0, BLACK);
 
 			uint8_t i = 1;
-			DrawText("Tidus kills:", dataRectangle.x - 20, dataRectangle.y + (dataRectangle.height + 8) * i, 16, BLACK);
-			DrawText(
+			DrawTextEx(
+				font,
+				"Tidus kills:",
+				(Vector2){(float)dataRectangle.x - 20, (float)(dataRectangle.y + (dataRectangle.height + 8) * i)},
+				fontSize,
+				0,
+				BLACK
+			);
+			DrawTextEx(
+				font,
 				kills.tidus,
-				dataRectangle.x + dataRectangle.width,
-				dataRectangle.y + (dataRectangle.height + 8) * i++,
-				16,
+				(Vector2){valueX, (float)(dataRectangle.y + (dataRectangle.height + 8) * i++)},
+				fontSize,
+				0,
 				SKYBLUE
 			);
-			DrawText("Tidus victories:", dataRectangle.x - 60, dataRectangle.y + (dataRectangle.height + 8) * i, 16, BLACK);
-			DrawText(
+			DrawTextEx(
+				font,
+				"Tidus victories:",
+				(Vector2){(float)dataRectangle.x - 60, (float)(dataRectangle.y + (dataRectangle.height + 8) * i)},
+				fontSize,
+				0,
+				BLACK
+			);
+			DrawTextEx(
+				font,
 				victories.tidus,
-				dataRectangle.x + dataRectangle.width,
-				dataRectangle.y + (dataRectangle.height + 8) * i++,
-				16,
+				(Vector2){valueX, (float)(dataRectangle.y + (dataRectangle.height + 8) * i++)},
+				fontSize,
+				0,
 				SKYBLUE
 			);
-			DrawText("Yuna kills:", dataRectangle.x - 20, dataRectangle.y + (dataRectangle.height + 8) * i, 16, BLACK);
-			DrawText(
+			DrawTextEx(
+				font,
+				"Yuna kills:",
+				(Vector2){(float)dataRectangle.x - 20, (float)(dataRectangle.y + (dataRectangle.height + 8) * i)},
+				fontSize,
+				0,
+				BLACK
+			);
+			DrawTextEx(
+				font,
 				kills.yuna,
-				dataRectangle.x + dataRectangle.width,
-				dataRectangle.y + (dataRectangle.height + 8) * i++,
-				16,
+				(Vector2){valueX, (float)(dataRectangle.y + (dataRectangle.height + 8) * i++)},
+				fontSize,
+				0,
 				GRAY
 			);
-			DrawText("Yuna victories:", dataRectangle.x - 60, dataRectangle.y + (dataRectangle.height + 8) * i, 16, BLACK);
-			DrawText(
+			DrawTextEx(
+				font,
+				"Yuna victories:",
+				(Vector2){(float)dataRectangle.x - 60, (float)(dataRectangle.y + (dataRectangle.height + 8) * i)},
+				fontSize,
+				0,
+				BLACK
+			);
+			DrawTextEx(
+				font,
 				victories.yuna,
-				dataRectangle.x + dataRectangle.width,
-				dataRectangle.y + (dataRectangle.height + 8) * i++,
-				16,
+				(Vector2){valueX, (float)(dataRectangle.y + (dataRectangle.height + 8) * i++)},
+				fontSize,
+				0,
 				GRAY
 			);
-			DrawText("Auron kills:", dataRectangle.x - 30, dataRectangle.y + (dataRectangle.height + 8) * i, 16, BLACK);
-			DrawText(
+			DrawTextEx(
+				font,
+				"Auron kills:",
+				(Vector2){(float)dataRectangle.x - 30, (float)(dataRectangle.y + (dataRectangle.height + 8) * i)},
+				fontSize,
+				0,
+				BLACK
+			);
+			DrawTextEx(
+				font,
 				kills.auron,
-				dataRectangle.x + dataRectangle.width,
-				dataRectangle.y + (dataRectangle.height + 8) * i++,
-				16,
+				(Vector2){valueX, (float)(dataRectangle.y + (dataRectangle.height + 8) * i++)},
+				fontSize,
+				0,
 				RED
 			);
-			DrawText("Auron victories:", dataRectangle.x - 70, dataRectangle.y + (dataRectangle.height + 8) * i, 16, BLACK);
-			DrawText(
+			DrawTextEx(
+				font,
+				"Auron victories:",
+				(Vector2){(float)dataRectangle.x - 70, (float)(dataRectangle.y + (dataRectangle.height + 8) * i)},
+				fontSize,
+				0,
+				BLACK
+			);
+			DrawTextEx(
+				font,
 				victories.auron,
-				dataRectangle.x + dataRectangle.width,
-				dataRectangle.y + (dataRectangle.height + 8) * i++,
-				16,
+				(Vector2){valueX, (float)(dataRectangle.y + (dataRectangle.height + 8) * i++)},
+				fontSize,
+				0,
 				RED
 			);
-			DrawText("Wakka kills:", dataRectangle.x - 30, dataRectangle.y + (dataRectangle.height + 8) * i, 16, BLACK);
-			DrawText(
+			DrawTextEx(
+				font,
+				"Wakka kills:",
+				(Vector2){(float)dataRectangle.x - 30, (float)(dataRectangle.y + (dataRectangle.height + 8) * i)},
+				fontSize,
+				0,
+				BLACK
+			);
+			DrawTextEx(
+				font,
 				kills.wakka,
-				dataRectangle.x + dataRectangle.width,
-				dataRectangle.y + (dataRectangle.height + 8) * i++,
-				16,
+				(Vector2){valueX, (float)(dataRectangle.y + (dataRectangle.height + 8) * i++)},
+				fontSize,
+				0,
 				ORANGE
 			);
-			DrawText("Wakka victories:", dataRectangle.x - 68, dataRectangle.y + (dataRectangle.height + 8) * i, 16, BLACK);
-			DrawText(
+			DrawTextEx(
+				font,
+				"Wakka victories:",
+				(Vector2){(float)dataRectangle.x - 60, (float)(dataRectangle.y + (dataRectangle.height + 8) * i)},
+				fontSize,
+				0,
+				BLACK
+			);
+			DrawTextEx(
+				font,
 				victories.wakka,
-				dataRectangle.x + dataRectangle.width,
-				dataRectangle.y + (dataRectangle.height + 8) * i++,
-				16,
+				(Vector2){valueX, (float)(dataRectangle.y + (dataRectangle.height + 8) * i++)},
+				fontSize,
+				0,
 				ORANGE
 			);
-			DrawText("Lulu kills:", dataRectangle.x - 15, dataRectangle.y + (dataRectangle.height + 8) * i, 16, BLACK);
-			DrawText(
+			DrawTextEx(
+				font,
+				"Lulu kills:",
+				(Vector2){(float)dataRectangle.x - 15, (float)(dataRectangle.y + (dataRectangle.height + 8) * i)},
+				fontSize,
+				0,
+				BLACK
+			);
+			DrawTextEx(
+				font,
 				kills.lulu,
-				dataRectangle.x + dataRectangle.width,
-				dataRectangle.y + (dataRectangle.height + 8) * i++,
-				16,
+				(Vector2){valueX, (float)(dataRectangle.y + (dataRectangle.height + 8) * i++)},
+				fontSize,
+				0,
 				BLACK
 			);
-			DrawText("Lulu victories:", dataRectangle.x - 55, dataRectangle.y + (dataRectangle.height + 8) * i, 16, BLACK);
-			DrawText(
+			DrawTextEx(
+				font,
+				"Lulu victories:",
+				(Vector2){(float)dataRectangle.x - 55, (float)(dataRectangle.y + (dataRectangle.height + 8) * i)},
+				fontSize,
+				0,
+				BLACK
+			);
+			DrawTextEx(
+				font,
 				victories.lulu,
-				dataRectangle.x + dataRectangle.width,
-				dataRectangle.y + (dataRectangle.height + 8) * i++,
-				16,
+				(Vector2){valueX, (float)(dataRectangle.y + (dataRectangle.height + 8) * i++)},
+				fontSize,
+				0,
 				BLACK
 			);
-			DrawText("Kimahri kills:", dataRectangle.x - 35, dataRectangle.y + (dataRectangle.height + 8) * i, 16, BLACK);
-			DrawText(
+			DrawTextEx(
+				font,
+				"Kimahri kills:",
+				(Vector2){(float)dataRectangle.x - 35, (float)(dataRectangle.y + (dataRectangle.height + 8) * i)},
+				fontSize,
+				0,
+				BLACK
+			);
+			DrawTextEx(
+				font,
 				kills.kimahri,
-				dataRectangle.x + dataRectangle.width,
-				dataRectangle.y + (dataRectangle.height + 8) * i++,
-				16,
+				(Vector2){valueX, (float)(dataRectangle.y + (dataRectangle.height + 8) * i++)},
+				fontSize,
+				0,
 				BLUE
 			);
-			DrawText("Kimahri victories:", dataRectangle.x - 75, dataRectangle.y + (dataRectangle.height + 8) * i, 16, BLACK);
-			DrawText(
+			DrawTextEx(
+				font,
+				"Kimahri victories:",
+				(Vector2){(float)dataRectangle.x - 75, (float)(dataRectangle.y + (dataRectangle.height + 8) * i)},
+				fontSize,
+				0,
+				BLACK
+			);
+			DrawTextEx(
+				font,
 				victories.kimahri,
-				dataRectangle.x + dataRectangle.width,
-				dataRectangle.y + (dataRectangle.height + 8) * i++,
-				16,
+				(Vector2){valueX, (float)(dataRectangle.y + (dataRectangle.height + 8) * i++)},
+				fontSize,
+				0,
 				BLUE
 			);
-			DrawText("Rikku kills:", dataRectangle.x - 20, dataRectangle.y + (dataRectangle.height + 8) * i, 16, BLACK);
-			DrawText(
+			DrawTextEx(
+				font,
+				"Rikku kills:",
+				(Vector2){(float)dataRectangle.x - 20, (float)(dataRectangle.y + (dataRectangle.height + 8) * i)},
+				fontSize,
+				0,
+				BLACK
+			);
+			DrawTextEx(
+				font,
 				kills.rikku,
-				dataRectangle.x + dataRectangle.width,
-				dataRectangle.y + (dataRectangle.height + 8) * i++,
-				16,
+				(Vector2){valueX, (float)(dataRectangle.y + (dataRectangle.height + 8) * i++)},
+				fontSize,
+				0,
 				GREEN
 			);
-			DrawText("Rikku victories:", dataRectangle.x - 60, dataRectangle.y + (dataRectangle.height + 8) * i, 16, BLACK);
-			DrawText(
+			DrawTextEx(
+				font,
+				"Rikku victories:",
+				(Vector2){(float)dataRectangle.x - 60, (float)(dataRectangle.y + (dataRectangle.height + 8) * i)},
+				fontSize,
+				0,
+				BLACK
+			);
+			DrawTextEx(
+				font,
 				victories.rikku,
-				dataRectangle.x + dataRectangle.width,
-				dataRectangle.y + (dataRectangle.height + 8) * i++,
-				16,
+				(Vector2){valueX, (float)(dataRectangle.y + (dataRectangle.height + 8) * i++)},
+				fontSize,
+				0,
 				GREEN
 			);
 		}
 
 		// Draw hack texts
-		DrawText("1) Toggle 100% steal chance", 24, 24, 16, stealSuccessRateColour);
-		DrawText("2) Toggle rare steal chance", 24, 48, 16, rareStealSuccessRateColour);
-		DrawText("3) Toggle added steal", 24, 72, 16, addedStealColour);
-		DrawText("4) Toggle rare drop chance", 24, 96, 16, moreRareDropsColour);
-		DrawText("5) Toggle always drop equipment", 24, 120, 16, guaranteedEquipmentColour);
-		DrawText("6) Toggle perfect Swordplay", 24, 144, 16, perfectSwordplayColour);
-		DrawText("7) Toggle perfect Bushido", 24, 192, 16, perfectBushidoColour);
-//		DrawText("8) Toggle perfect Fury", 24, 168, 16, perfectFuryColour);
+		uint8_t y = 1;
+		DrawTextEx(
+			font,
+			perfectStealString,
+			(Vector2){PADDING_LEFT, (float)y++ * LINE_HEIGHT},
+			fontSize,
+			0,
+			stealSuccessRateColour
+		);
+		DrawTextEx(
+			font,
+			rareStealString,
+			(Vector2){PADDING_LEFT, (float)y++ * LINE_HEIGHT},
+			fontSize,
+			0,
+			rareStealSuccessRateColour
+		);
+		DrawTextEx(
+			font,
+			addedStealString,
+			(Vector2){PADDING_LEFT, (float)y++ * LINE_HEIGHT},
+			fontSize,
+			0,
+			addedStealColour
+		);
+		DrawTextEx(
+			font,
+			rareDropString,
+			(Vector2){PADDING_LEFT, (float)y++ * LINE_HEIGHT},
+			fontSize,
+			0,
+			moreRareDropsColour
+		);
+		DrawTextEx(
+			font,
+			alwaysDropEquipmentString,
+			(Vector2){PADDING_LEFT, (float)y++ * LINE_HEIGHT},
+			fontSize,
+			0,
+			guaranteedEquipmentColour
+		);
+		DrawTextEx(
+			font,
+			perfectSwordplayString,
+			(Vector2){PADDING_LEFT, (float)y++ * LINE_HEIGHT},
+			fontSize,
+			0,
+			perfectSwordplayColour
+		);
+		DrawTextEx(
+			font,
+			perfectBushidoString,
+			(Vector2){PADDING_LEFT, (float)y++ * LINE_HEIGHT},
+			fontSize,
+			0,
+			perfectBushidoColour
+		);
+		DrawTextEx(
+			font,
+			perfectFuryString,
+			(Vector2){PADDING_LEFT, (float)y++ * LINE_HEIGHT},
+			fontSize,
+			0,
+			perfectFuryColour
+		);
 
 		if (rareStealSuccessValue != RARE_STEAL_CHANCE_ORIGINAL_2) {
-			DrawText("(", RARE_DROP_TEXT_WIDTH, 48, 16, BLACK);
-			DrawText(")", RARE_DROP_TEXT_WIDTH + RARE_DROP_50_WIDTH + RARE_DROP_100_WIDTH + 44, 48, 16, BLACK);
-			DrawText(
+			DrawTextEx(font, "(", (Vector2){PADDING_LEFT + rareStealTextWidth + 6, 50}, fontSize, 0, BLACK);
+			DrawTextEx(
+				font,
+				")",
+				(Vector2){
+					PADDING_LEFT + rareStealTextWidth + fiftyPercentWidth + hundredPercentWidth + zeroPercentWidth + 22,
+					50
+				},
+				fontSize,
+				0,
+				BLACK
+			);
+			DrawTextEx(
+				font,
 				"50%",
-				RARE_DROP_TEXT_WIDTH + 6,
-				48,
-				16,
+				(Vector2){PADDING_LEFT + rareStealTextWidth + 12, 50},
+				fontSize,
+				0,
 				rareStealSuccessValue == RARE_STEAL_CHANCE_NEW_2_50_50 ? GREEN : BLACK
 			);
-			DrawText(
+			DrawTextEx(
+				font,
 				"100%",
-				RARE_DROP_TEXT_WIDTH + RARE_DROP_50_WIDTH + 14,
-				48,
-				16,
+				(Vector2){PADDING_LEFT + rareStealTextWidth + fiftyPercentWidth + 16, 50},
+				fontSize,
+				0,
 				rareStealSuccessValue == NO_OP ? GREEN : BLACK
 			);
-			DrawText(
+			DrawTextEx(
+				font,
 				"0%",
-				RARE_DROP_TEXT_WIDTH + RARE_DROP_50_WIDTH + RARE_DROP_100_WIDTH + 23,
-				48,
-				16,
+				(Vector2){PADDING_LEFT + rareStealTextWidth + fiftyPercentWidth + hundredPercentWidth + 22, 50},
+				fontSize,
+				0,
 				rareStealSuccessValue == RARE_STEAL_CHANCE_NEW_2_NEVER ? GREEN : BLACK
 			);
 		}
 
 		if (moreRareDropsValue != MORE_RARE_DROPS_ORIGINAL) {
-			DrawText("(", RARE_DROP_TEXT_WIDTH, 96, 16, BLACK);
-			DrawText(")", RARE_DROP_TEXT_WIDTH + RARE_DROP_50_WIDTH + RARE_DROP_100_WIDTH + 44, 96, 16, BLACK);
-			DrawText(
+			DrawTextEx(font, "(", (Vector2){PADDING_LEFT + rareDropTextWidth + 6, 102}, fontSize, 0, BLACK);
+			DrawTextEx(
+				font,
+				")",
+				(Vector2){
+					PADDING_LEFT + rareDropTextWidth + fiftyPercentWidth + hundredPercentWidth + zeroPercentWidth + 22,
+					102 // TODO: derive this the same way we get the position of the cheat label
+				},
+				fontSize,
+				0,
+				BLACK
+			);
+			DrawTextEx(
+				font,
 				"50%",
-				RARE_DROP_TEXT_WIDTH + 6,
-				96,
-				16,
+				(Vector2){PADDING_LEFT + rareDropTextWidth + 12, 102},
+				fontSize,
+				0,
 				moreRareDropsValue == MORE_RARE_DROPS_NEW_50_50 ? GREEN : BLACK
 			);
-			DrawText(
+			DrawTextEx(
+				font,
 				"100%",
-				RARE_DROP_TEXT_WIDTH + RARE_DROP_50_WIDTH + 14,
-				96,
-				16,
+				(Vector2){PADDING_LEFT + rareDropTextWidth + fiftyPercentWidth + 16, 102},
+				fontSize,
+				0,
 				moreRareDropsValue == MORE_RARE_DROPS_NEW_ALWAYS ? GREEN : BLACK
 			);
-			DrawText(
+			DrawTextEx(
+				font,
 				"0%",
-				RARE_DROP_TEXT_WIDTH + RARE_DROP_50_WIDTH + RARE_DROP_100_WIDTH + 23,
-				96,
-				16,
+				(Vector2){PADDING_LEFT + rareDropTextWidth + fiftyPercentWidth + hundredPercentWidth + 22, 102},
+				fontSize,
+				0,
 				moreRareDropsValue == MORE_RARE_DROPS_NEW_NEVER ? GREEN : BLACK
 			);
 		}
@@ -500,6 +707,8 @@ int main() {
 
 		++framesSinceDataUpdate;
 	}
+
+	UnloadFont(font);
 
 	window_destroy();
 

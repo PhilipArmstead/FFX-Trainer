@@ -60,7 +60,7 @@ static inline long openProcess() {
 	return pid;
 }
 
-static inline uint64_t getProcessFileDescriptor() {
+static inline int64_t getProcessFileDescriptor() {
 	const long pid = openProcess();
 	if (pid) {
 		char memoryPath[32];

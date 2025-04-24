@@ -4,108 +4,14 @@
 
 #pragma once
 
-#ifdef _WIN32
-#define ADDED_STEAL_LOCATION 0x38956b
-#define STEAL_CHANCE_LOCATION 0x38b830
-#define RARE_STEAL_CHANCE_LOCATION 0x38b905
-#define MORE_RARE_DROPS_LOCATION 0x3992d1
-#define ALWAYS_DROP_EQUIPMENT_LOCATION 0x399394
+#define LINE_HEIGHT 26
+#define PADDING_LEFT 24
 
-#define TIDUS_PERFECT_LIMIT_LOCATION 0x4923ee
-#define AURON_PERFECT_LIMIT_LOCATION 0x490f11
-#define LULU_PERFECT_LIMIT_LOCATION 0x491c18
-
-#define TOTAL_BATTLES_LOCATION 0xd307a4
-#define TIDUS_VICTORIES_LOCATION 0xd320ac
-#define TIDUS_KILLS_LOCATION 0xd320b0
-#define YUNA_VICTORIES_LOCATION 0xd32140
-#define YUNA_KILLS_LOCATION 0xd32144
-#define AURON_VICTORIES_LOCATION 0xd321d4
-#define AURON_KILLS_LOCATION 0xd321d8
-#define KIMAHRI_VICTORIES_LOCATION 0xd32268
-#define KIMAHRI_KILLS_LOCATION 0xd3226c
-#define WAKKA_VICTORIES_LOCATION 0xd322fc
-#define WAKKA_KILLS_LOCATION 0xd32300
-#define LULU_VICTORIES_LOCATION 0xd32390
-#define LULU_KILLS_LOCATION 0xd32394
-#define RIKKU_VICTORIES_LOCATION 0xd32424
-#define RIKKU_KILLS_LOCATION 0xd32428
-#else
-#define ADDED_STEAL_LOCATION 0x78956b
-#define STEAL_CHANCE_LOCATION 0x78b830
-#define RARE_STEAL_CHANCE_LOCATION 0x78b905
-#define MORE_RARE_DROPS_LOCATION 0x7992d1
-#define ALWAYS_DROP_EQUIPMENT_LOCATION 0x799394
-
-#define TIDUS_PERFECT_LIMIT_LOCATION 0x8923ee
-#define AURON_PERFECT_LIMIT_LOCATION 0x890f11
-#define LULU_PERFECT_LIMIT_LOCATION 0x891c18
-
-#define TOTAL_BATTLES_LOCATION 0x11307a4
-#define TIDUS_VICTORIES_LOCATION 0x11320ac
-#define TIDUS_KILLS_LOCATION 0x11320b0
-#define YUNA_VICTORIES_LOCATION 0x1132140
-#define YUNA_KILLS_LOCATION 0x1132144
-#define AURON_VICTORIES_LOCATION 0x11321d4
-#define AURON_KILLS_LOCATION 0x11321d8
-#define KIMAHRI_VICTORIES_LOCATION 0x1132268
-#define KIMAHRI_KILLS_LOCATION 0x113226c
-#define WAKKA_VICTORIES_LOCATION 0x11322fc
-#define WAKKA_KILLS_LOCATION 0x1132300
-#define LULU_VICTORIES_LOCATION 0x1132390
-#define LULU_KILLS_LOCATION 0x1132394
-#define RIKKU_VICTORIES_LOCATION 0x1132424
-#define RIKKU_KILLS_LOCATION 0x1132428
-#endif
-
-#define STEAL_CHANCE_ORIGINAL_0 0x0f
-#define STEAL_CHANCE_ORIGINAL_1 0xb6
-#define STEAL_CHANCE_ORIGINAL_2 0x5e
-#define STEAL_CHANCE_ORIGINAL_3 0x0a
-#define STEAL_CHANCE_NEW_0 0x66
-#define STEAL_CHANCE_NEW_1 0xbb
-#define STEAL_CHANCE_NEW_2 0xff
-#define STEAL_CHANCE_NEW_3 0x00
-
-#define RARE_STEAL_CHANCE_ORIGINAL_0 0x3b
-#define RARE_STEAL_CHANCE_ORIGINAL_1 0x45
-#define RARE_STEAL_CHANCE_ORIGINAL_2 0x10
-#define RARE_STEAL_CHANCE_NEW_0 0x83
-#define RARE_STEAL_CHANCE_NEW_1 0xf8
-#define RARE_STEAL_CHANCE_NEW_2_50_50 0x7f
-#define RARE_STEAL_CHANCE_NEW_2_NEVER 0x00
-
-#define ADDED_STEAL_ORIGINAL_0 0x74
-#define ADDED_STEAL_ORIGINAL_1 0x1c
-
-#define MORE_RARE_DROPS_ORIGINAL 0x20
-#define MORE_RARE_DROPS_NEW_50_50 0x7f
-#define MORE_RARE_DROPS_NEW_ALWAYS 0xff
-#define MORE_RARE_DROPS_NEW_NEVER 0x00
-
-#define ALWAYS_DROP_EQUIPMENT_ORIGINAL 0x7c
-#define ALWAYS_DROP_EQUIPMENT_NEW 0xeb
-
-#define RARE_DROP_TEXT_WIDTH 248
-#define RARE_DROP_50_WIDTH 29
-#define RARE_DROP_100_WIDTH 33
-
-#define NO_OP 0x90
-
-#define TIDUS_PERFECT_LIMIT_ORIGINAL 0x0f, 0x8d, 0x71, 0xff, 0xff, 0xff
-// jmp 0x89235a; nop
-// TODO: move the jump somewhere that means we never see the timer?
-#define TIDUS_PERFECT_LIMIT_NEW 0xe9, 0x67, 0xff, 0xff, 0xff, NO_OP
-
-#define AURON_PERFECT_LIMIT_ORIGINAL 0x66, 0xff, 0x05, 0xb4, 0xd6, 0x33, 0x00
-// jmp 0x890fc6; nop; nop
-// TODO: move the jump somewhere that means we never see the timer?
-#define AURON_PERFECT_LIMIT_NEW 0xe9, 0xb0, 0x00, 0x00, 0x00, NO_OP, NO_OP
-
-#define LULU_PERFECT_LIMIT_ORIGINAL 0xd8, 0x1d, 0x50, 0xf7, 0x33, 0x01, 0xdf, 0xe0, 0xf6, 0xc4, 0x01, 0x75, 0x1a
-// mov [luluFuryCount], 12; jmp 0x891f30
-// TODO: this address isn't right on Windows
-// TODO: move the jump somewhere that means we never see the timer?
-#define LULU_PERFECT_LIMIT_NEW 0xc6, 0x05, 0xdf, 0xd6, 0x33, 0x01, 0x0c, NO_OP, 0xe9, 0x0b, 0x03, 0x00, 0x00
-
-// TODO: add Wakka's perfect reels
+const char *perfectStealString = "1) Toggle 100% steal chance";
+const char *rareStealString = "2) Toggle rare steal chance";
+const char *addedStealString = "3) Toggle added steal";
+const char *rareDropString = "4) Toggle rare drop chance";
+const char *alwaysDropEquipmentString = "5) Toggle always drop equipment";
+const char *perfectSwordplayString = "6) Toggle perfect Swordplay";
+const char *perfectBushidoString = "7) Toggle perfect Bushido";
+const char *perfectFuryString = "8) Toggle perfect Fury";

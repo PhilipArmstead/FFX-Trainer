@@ -59,12 +59,18 @@ static inline uint8_t readByte(HANDLE fd, DWORD base, DWORD address) {
 #include <unistd.h>
 
 
-static inline void readFromMemory(const long fd, const uint64_t base, const uint64_t address, const int length, uint8_t *bytes) {
+static inline void readFromMemory(
+	const uint64_t fd,
+	const uint64_t base,
+	const uint64_t address,
+	const int length,
+	uint8_t *bytes
+) {
 	lseek(fd, base + address, SEEK_SET);
 	read(fd, bytes, length);
 }
 
-static inline uint8_t readByte(const long fd, const uint64_t base, uint64_t address) {
+static inline uint8_t readByte(const long fd, const uint64_t base, const uint64_t address) {
 	uint8_t byte;
 	lseek(fd, base + address, SEEK_SET);
 	read(fd, &byte, 1);
@@ -73,7 +79,7 @@ static inline uint8_t readByte(const long fd, const uint64_t base, uint64_t addr
 }
 
 static inline void writeToMemory(
-	const long fd,
+	const uint64_t fd,
 	const uint64_t base,
 	const uint32_t address,
 	const int length,
