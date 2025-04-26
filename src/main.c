@@ -97,6 +97,21 @@ int main() {
 	const float fiftyPercentWidth = MeasureTextEx(font, "50%", fontSize, 0).x;
 	const float hundredPercentWidth = MeasureTextEx(font, "100%", fontSize, 0).x;
 	const float zeroPercentWidth = MeasureTextEx(font, "0%", fontSize, 0).x;
+	const float battlesWidth = MeasureTextEx(font, battlesString, fontSize, 0).x;
+	const float tidusKillsWidth = MeasureTextEx(font, tidusKillsString, fontSize, 0).x;
+	const float tidusVictoriesWidth = MeasureTextEx(font, tidusVictoriesString, fontSize, 0).x;
+	const float yunaKillsWidth = MeasureTextEx(font, yunaKillsString, fontSize, 0).x;
+	const float yunaVictoriesWidth = MeasureTextEx(font, yunaVictoriesString, fontSize, 0).x;
+	const float auronKillsWidth = MeasureTextEx(font, auronKillsString, fontSize, 0).x;
+	const float auronVictoriesWidth = MeasureTextEx(font, auronVictoriesString, fontSize, 0).x;
+	const float wakkaKillsWidth = MeasureTextEx(font, wakkaKillsString, fontSize, 0).x;
+	const float wakkaVictoriesWidth = MeasureTextEx(font, wakkaVictoriesString, fontSize, 0).x;
+	const float luluKillsWidth = MeasureTextEx(font, luluKillsString, fontSize, 0).x;
+	const float luluVictoriesWidth = MeasureTextEx(font, luluVictoriesString, fontSize, 0).x;
+	const float kimahriKillsWidth = MeasureTextEx(font, kimahriKillsString, fontSize, 0).x;
+	const float kimahriVictoriesWidth = MeasureTextEx(font, kimahriVictoriesString, fontSize, 0).x;
+	const float rikkuKillsWidth = MeasureTextEx(font, rikkuKillsString, fontSize, 0).x;
+	const float rikkuVictoriesWidth = MeasureTextEx(font, rikkuVictoriesString, fontSize, 0).x;
 
 	while (true) {
 		uintptr_t base = 0;
@@ -351,22 +366,22 @@ int main() {
 				framesSinceDataUpdate = 0;
 			}
 
-			// Print game data
+			// Print game stats
 			const Rectangle16 dataRectangle = {
 				.height = 18,
-				.width = 62,
 				.y = loadButtonRectangle.y,
 				.x = SCREEN_WIDTH - 130
 			};
-			const float valueX = (float)(dataRectangle.x + dataRectangle.width);
-			DrawTextEx(font, "Battles:", (Vector2){dataRectangle.x, dataRectangle.y}, fontSize, 0, BLACK);
+			const float statsRight = (float)SCREEN_WIDTH - STATS_RIGHT;
+			const float valueX = statsRight + 8;
+			DrawTextEx(font, battlesString, (Vector2){statsRight - battlesWidth, dataRectangle.y}, fontSize, 0, BLACK);
 			DrawTextEx(font, battleCountString, (Vector2){valueX, dataRectangle.y}, fontSize, 0, BLACK);
 
 			uint8_t i = 1;
 			DrawTextEx(
 				font,
-				"Tidus kills:",
-				(Vector2){(float)dataRectangle.x - 20, (float)(dataRectangle.y + (dataRectangle.height + 8) * i)},
+				tidusKillsString,
+				(Vector2){statsRight - tidusKillsWidth, (float)(dataRectangle.y + (dataRectangle.height + 8) * i)},
 				fontSize,
 				0,
 				BLACK
@@ -381,8 +396,8 @@ int main() {
 			);
 			DrawTextEx(
 				font,
-				"Tidus victories:",
-				(Vector2){(float)dataRectangle.x - 60, (float)(dataRectangle.y + (dataRectangle.height + 8) * i)},
+				tidusVictoriesString,
+				(Vector2){statsRight - tidusVictoriesWidth, (float)(dataRectangle.y + (dataRectangle.height + 8) * i)},
 				fontSize,
 				0,
 				BLACK
@@ -397,8 +412,8 @@ int main() {
 			);
 			DrawTextEx(
 				font,
-				"Yuna kills:",
-				(Vector2){(float)dataRectangle.x - 20, (float)(dataRectangle.y + (dataRectangle.height + 8) * i)},
+				yunaKillsString,
+				(Vector2){statsRight - yunaKillsWidth, (float)(dataRectangle.y + (dataRectangle.height + 8) * i)},
 				fontSize,
 				0,
 				BLACK
@@ -413,8 +428,8 @@ int main() {
 			);
 			DrawTextEx(
 				font,
-				"Yuna victories:",
-				(Vector2){(float)dataRectangle.x - 60, (float)(dataRectangle.y + (dataRectangle.height + 8) * i)},
+				yunaVictoriesString,
+				(Vector2){statsRight - yunaVictoriesWidth, (float)(dataRectangle.y + (dataRectangle.height + 8) * i)},
 				fontSize,
 				0,
 				BLACK
@@ -429,8 +444,8 @@ int main() {
 			);
 			DrawTextEx(
 				font,
-				"Auron kills:",
-				(Vector2){(float)dataRectangle.x - 30, (float)(dataRectangle.y + (dataRectangle.height + 8) * i)},
+				auronKillsString,
+				(Vector2){statsRight - auronKillsWidth, (float)(dataRectangle.y + (dataRectangle.height + 8) * i)},
 				fontSize,
 				0,
 				BLACK
@@ -445,8 +460,8 @@ int main() {
 			);
 			DrawTextEx(
 				font,
-				"Auron victories:",
-				(Vector2){(float)dataRectangle.x - 70, (float)(dataRectangle.y + (dataRectangle.height + 8) * i)},
+				auronVictoriesString,
+				(Vector2){statsRight - auronVictoriesWidth, (float)(dataRectangle.y + (dataRectangle.height + 8) * i)},
 				fontSize,
 				0,
 				BLACK
@@ -461,8 +476,8 @@ int main() {
 			);
 			DrawTextEx(
 				font,
-				"Wakka kills:",
-				(Vector2){(float)dataRectangle.x - 30, (float)(dataRectangle.y + (dataRectangle.height + 8) * i)},
+				wakkaKillsString,
+				(Vector2){statsRight - wakkaKillsWidth, (float)(dataRectangle.y + (dataRectangle.height + 8) * i)},
 				fontSize,
 				0,
 				BLACK
@@ -477,8 +492,8 @@ int main() {
 			);
 			DrawTextEx(
 				font,
-				"Wakka victories:",
-				(Vector2){(float)dataRectangle.x - 60, (float)(dataRectangle.y + (dataRectangle.height + 8) * i)},
+				wakkaVictoriesString,
+				(Vector2){statsRight - wakkaVictoriesWidth, (float)(dataRectangle.y + (dataRectangle.height + 8) * i)},
 				fontSize,
 				0,
 				BLACK
@@ -493,8 +508,8 @@ int main() {
 			);
 			DrawTextEx(
 				font,
-				"Lulu kills:",
-				(Vector2){(float)dataRectangle.x - 15, (float)(dataRectangle.y + (dataRectangle.height + 8) * i)},
+				luluKillsString,
+				(Vector2){statsRight - luluKillsWidth, (float)(dataRectangle.y + (dataRectangle.height + 8) * i)},
 				fontSize,
 				0,
 				BLACK
@@ -509,8 +524,8 @@ int main() {
 			);
 			DrawTextEx(
 				font,
-				"Lulu victories:",
-				(Vector2){(float)dataRectangle.x - 55, (float)(dataRectangle.y + (dataRectangle.height + 8) * i)},
+				luluVictoriesString,
+				(Vector2){statsRight - luluVictoriesWidth, (float)(dataRectangle.y + (dataRectangle.height + 8) * i)},
 				fontSize,
 				0,
 				BLACK
@@ -525,8 +540,8 @@ int main() {
 			);
 			DrawTextEx(
 				font,
-				"Kimahri kills:",
-				(Vector2){(float)dataRectangle.x - 35, (float)(dataRectangle.y + (dataRectangle.height + 8) * i)},
+				kimahriKillsString,
+				(Vector2){statsRight - kimahriKillsWidth, (float)(dataRectangle.y + (dataRectangle.height + 8) * i)},
 				fontSize,
 				0,
 				BLACK
@@ -541,8 +556,8 @@ int main() {
 			);
 			DrawTextEx(
 				font,
-				"Kimahri victories:",
-				(Vector2){(float)dataRectangle.x - 75, (float)(dataRectangle.y + (dataRectangle.height + 8) * i)},
+				kimahriVictoriesString,
+				(Vector2){statsRight - kimahriVictoriesWidth, (float)(dataRectangle.y + (dataRectangle.height + 8) * i)},
 				fontSize,
 				0,
 				BLACK
@@ -557,8 +572,8 @@ int main() {
 			);
 			DrawTextEx(
 				font,
-				"Rikku kills:",
-				(Vector2){(float)dataRectangle.x - 20, (float)(dataRectangle.y + (dataRectangle.height + 8) * i)},
+				rikkuKillsString,
+				(Vector2){statsRight - rikkuKillsWidth, (float)(dataRectangle.y + (dataRectangle.height + 8) * i)},
 				fontSize,
 				0,
 				BLACK
@@ -573,8 +588,8 @@ int main() {
 			);
 			DrawTextEx(
 				font,
-				"Rikku victories:",
-				(Vector2){(float)dataRectangle.x - 60, (float)(dataRectangle.y + (dataRectangle.height + 8) * i)},
+				rikkuVictoriesString,
+				(Vector2){statsRight - rikkuVictoriesWidth, (float)(dataRectangle.y + (dataRectangle.height + 8) * i)},
 				fontSize,
 				0,
 				BLACK
