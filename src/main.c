@@ -37,6 +37,8 @@ int main() {
 	const uint16_t SCREEN_HEIGHT = 420;
 	const uint8_t FPS = 30;
 	window_create(SCREEN_WIDTH, SCREEN_HEIGHT, FPS, "FFX Trainer");
+	const Image icon = LoadImage("assets/icon.png");
+	SetWindowIcon(icon);
 
 	uint16_t framesSinceDataUpdate = 300;
 	char battleCountString[8] = {0};
@@ -709,6 +711,7 @@ int main() {
 	}
 
 	UnloadFont(font);
+	UnloadImage(icon);
 
 	window_destroy();
 
