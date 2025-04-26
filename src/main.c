@@ -370,94 +370,136 @@ int main() {
 			const float statsRight = (float)SCREEN_WIDTH - STATS_RIGHT;
 			const float statsTop = loadButtonRectangle.y;
 			const float valueX = statsRight + 8;
-			DrawTextEx(font, battlesString, {statsRight - battlesWidth, statsTop}, fontSize, 0, BLACK);
-			DrawTextEx(font, battleCountString, {valueX, statsTop}, fontSize, 0, BLACK);
+			DrawTextEx(font, battlesString, (Vector2){statsRight - battlesWidth, statsTop}, fontSize, 0, BLACK);
+			DrawTextEx(font, battleCountString, (Vector2){valueX, statsTop}, fontSize, 0, BLACK);
 
 			uint8_t i = 1;
-			DrawTextEx(font, tidusKillsString, {statsRight - tidusKillsWidth, statsTop + LINE_HEIGHT * i}, fontSize, 0,BLACK);
-			DrawTextEx(font, kills.tidus, {valueX, statsTop + LINE_HEIGHT * i++}, fontSize, 0,SKYBLUE);
+			DrawTextEx(
+				font,
+				tidusKillsString,
+				(Vector2){statsRight - tidusKillsWidth, statsTop + LINE_HEIGHT * i},
+				fontSize,
+				0,
+				BLACK
+			);
+			DrawTextEx(font, kills.tidus, (Vector2){valueX, statsTop + LINE_HEIGHT * i++}, fontSize, 0,SKYBLUE);
 			DrawTextEx(
 				font,
 				tidusVictoriesString,
-				{statsRight - tidusVictoriesWidth, statsTop + LINE_HEIGHT * i},
+				(Vector2){statsRight - tidusVictoriesWidth, statsTop + LINE_HEIGHT * i},
 				fontSize,
 				0,
 				BLACK
 			);
-			DrawTextEx(font, victories.tidus, {valueX, statsTop + LINE_HEIGHT * i++}, fontSize, 0,SKYBLUE);
-			DrawTextEx(font, yunaKillsString, {statsRight - yunaKillsWidth, statsTop + LINE_HEIGHT * i}, fontSize, 0,BLACK);
-			DrawTextEx(font, kills.yuna, {valueX, statsTop + LINE_HEIGHT * i++}, fontSize, 0,GRAY);
+			DrawTextEx(font, victories.tidus, (Vector2){valueX, statsTop + LINE_HEIGHT * i++}, fontSize, 0,SKYBLUE);
+			DrawTextEx(
+				font,
+				yunaKillsString,
+				(Vector2){statsRight - yunaKillsWidth, statsTop + LINE_HEIGHT * i},
+				fontSize,
+				0,
+				BLACK
+			);
+			DrawTextEx(font, kills.yuna, (Vector2){valueX, statsTop + LINE_HEIGHT * i++}, fontSize, 0,GRAY);
 			DrawTextEx(
 				font,
 				yunaVictoriesString,
-				{statsRight - yunaVictoriesWidth, statsTop + LINE_HEIGHT * i},
+				(Vector2){statsRight - yunaVictoriesWidth, statsTop + LINE_HEIGHT * i},
 				fontSize,
 				0,
 				BLACK
 			);
-			DrawTextEx(font, victories.yuna, {valueX, statsTop + LINE_HEIGHT * i++}, fontSize, 0,GRAY);
-			DrawTextEx(font, auronKillsString, {statsRight - auronKillsWidth, statsTop + LINE_HEIGHT * i}, fontSize, 0,BLACK);
-			DrawTextEx(font, kills.auron, {valueX, statsTop + LINE_HEIGHT * i++}, fontSize, 0,RED);
+			DrawTextEx(font, victories.yuna, (Vector2){valueX, statsTop + LINE_HEIGHT * i++}, fontSize, 0,GRAY);
+			DrawTextEx(
+				font,
+				auronKillsString,
+				(Vector2){statsRight - auronKillsWidth, statsTop + LINE_HEIGHT * i},
+				fontSize,
+				0,
+				BLACK
+			);
+			DrawTextEx(font, kills.auron, (Vector2){valueX, statsTop + LINE_HEIGHT * i++}, fontSize, 0,RED);
 			DrawTextEx(
 				font,
 				auronVictoriesString,
-				{statsRight - auronVictoriesWidth, statsTop + LINE_HEIGHT * i},
+				(Vector2){statsRight - auronVictoriesWidth, statsTop + LINE_HEIGHT * i},
 				fontSize,
 				0,
 				BLACK
 			);
-			DrawTextEx(font, victories.auron, {valueX, statsTop + LINE_HEIGHT * i++}, fontSize, 0,RED);
-			DrawTextEx(font, wakkaKillsString, {statsRight - wakkaKillsWidth, statsTop + LINE_HEIGHT * i}, fontSize, 0,BLACK);
-			DrawTextEx(font, kills.wakka, {valueX, statsTop + LINE_HEIGHT * i++}, fontSize, 0,ORANGE);
+			DrawTextEx(font, victories.auron, (Vector2){valueX, statsTop + LINE_HEIGHT * i++}, fontSize, 0,RED);
+			DrawTextEx(
+				font,
+				wakkaKillsString,
+				(Vector2){statsRight - wakkaKillsWidth, statsTop + LINE_HEIGHT * i},
+				fontSize,
+				0,
+				BLACK
+			);
+			DrawTextEx(font, kills.wakka, (Vector2){valueX, statsTop + LINE_HEIGHT * i++}, fontSize, 0,ORANGE);
 			DrawTextEx(
 				font,
 				wakkaVictoriesString,
-				{statsRight - wakkaVictoriesWidth, statsTop + LINE_HEIGHT * i},
+				(Vector2){statsRight - wakkaVictoriesWidth, statsTop + LINE_HEIGHT * i},
 				fontSize,
 				0,
 				BLACK
 			);
-			DrawTextEx(font, victories.wakka, {valueX, statsTop + LINE_HEIGHT * i++}, fontSize, 0,ORANGE);
-			DrawTextEx(font, luluKillsString, {statsRight - luluKillsWidth, statsTop + LINE_HEIGHT * i}, fontSize, 0,BLACK);
-			DrawTextEx(font, kills.lulu, {valueX, statsTop + LINE_HEIGHT * i++}, fontSize, 0,BLACK);
+			DrawTextEx(font, victories.wakka, (Vector2){valueX, statsTop + LINE_HEIGHT * i++}, fontSize, 0,ORANGE);
+			DrawTextEx(
+				font,
+				luluKillsString,
+				(Vector2){statsRight - luluKillsWidth, statsTop + LINE_HEIGHT * i},
+				fontSize,
+				0,
+				BLACK
+			);
+			DrawTextEx(font, kills.lulu, (Vector2){valueX, statsTop + LINE_HEIGHT * i++}, fontSize, 0,BLACK);
 			DrawTextEx(
 				font,
 				luluVictoriesString,
-				{statsRight - luluVictoriesWidth, statsTop + LINE_HEIGHT * i},
+				(Vector2){statsRight - luluVictoriesWidth, statsTop + LINE_HEIGHT * i},
 				fontSize,
 				0,
 				BLACK
 			);
-			DrawTextEx(font, victories.lulu, {valueX, statsTop + LINE_HEIGHT * i++}, fontSize, 0,BLACK);
+			DrawTextEx(font, victories.lulu, (Vector2){valueX, statsTop + LINE_HEIGHT * i++}, fontSize, 0,BLACK);
 			DrawTextEx(
 				font,
 				kimahriKillsString,
-				{statsRight - kimahriKillsWidth, statsTop + LINE_HEIGHT * i},
+				(Vector2){statsRight - kimahriKillsWidth, statsTop + LINE_HEIGHT * i},
 				fontSize,
 				0,
 				BLACK
 			);
-			DrawTextEx(font, kills.kimahri, {valueX, statsTop + LINE_HEIGHT * i++}, fontSize, 0,BLUE);
+			DrawTextEx(font, kills.kimahri, (Vector2){valueX, statsTop + LINE_HEIGHT * i++}, fontSize, 0,BLUE);
 			DrawTextEx(
 				font,
 				kimahriVictoriesString,
-				{statsRight - kimahriVictoriesWidth, statsTop + LINE_HEIGHT * i},
+				(Vector2){statsRight - kimahriVictoriesWidth, statsTop + LINE_HEIGHT * i},
 				fontSize,
 				0,
 				BLACK
 			);
-			DrawTextEx(font, victories.kimahri, {valueX, statsTop + LINE_HEIGHT * i++}, fontSize, 0,BLUE);
-			DrawTextEx(font, rikkuKillsString, {statsRight - rikkuKillsWidth, statsTop + LINE_HEIGHT * i}, fontSize, 0,BLACK);
-			DrawTextEx(font, kills.rikku, {valueX, statsTop + LINE_HEIGHT * i++}, fontSize, 0,GREEN);
+			DrawTextEx(font, victories.kimahri, (Vector2){valueX, statsTop + LINE_HEIGHT * i++}, fontSize, 0,BLUE);
+			DrawTextEx(
+				font,
+				rikkuKillsString,
+				(Vector2){statsRight - rikkuKillsWidth, statsTop + LINE_HEIGHT * i},
+				fontSize,
+				0,
+				BLACK
+			);
+			DrawTextEx(font, kills.rikku, (Vector2){valueX, statsTop + LINE_HEIGHT * i++}, fontSize, 0,GREEN);
 			DrawTextEx(
 				font,
 				rikkuVictoriesString,
-				{statsRight - rikkuVictoriesWidth, statsTop + LINE_HEIGHT * i},
+				(Vector2){statsRight - rikkuVictoriesWidth, statsTop + LINE_HEIGHT * i},
 				fontSize,
 				0,
 				BLACK
 			);
-			DrawTextEx(font, victories.rikku, {valueX, statsTop + LINE_HEIGHT * i++}, fontSize, 0,GREEN);
+			DrawTextEx(font, victories.rikku, (Vector2){valueX, statsTop + LINE_HEIGHT * i++}, fontSize, 0,GREEN);
 		}
 
 		// Draw hack texts
@@ -465,7 +507,7 @@ int main() {
 		DrawTextEx(
 			font,
 			perfectStealString,
-			{PADDING_LEFT, (float)y++ * LINE_HEIGHT},
+			(Vector2){PADDING_LEFT, (float)y++ * LINE_HEIGHT},
 			fontSize,
 			0,
 			stealSuccessRateColour
@@ -473,7 +515,7 @@ int main() {
 		DrawTextEx(
 			font,
 			rareStealString,
-			{PADDING_LEFT, (float)y++ * LINE_HEIGHT},
+			(Vector2){PADDING_LEFT, (float)y++ * LINE_HEIGHT},
 			fontSize,
 			0,
 			rareStealSuccessRateColour
@@ -481,7 +523,7 @@ int main() {
 		DrawTextEx(
 			font,
 			addedStealString,
-			{PADDING_LEFT, (float)y++ * LINE_HEIGHT},
+			(Vector2){PADDING_LEFT, (float)y++ * LINE_HEIGHT},
 			fontSize,
 			0,
 			addedStealColour
@@ -489,7 +531,7 @@ int main() {
 		DrawTextEx(
 			font,
 			rareDropString,
-			{PADDING_LEFT, (float)y++ * LINE_HEIGHT},
+			(Vector2){PADDING_LEFT, (float)y++ * LINE_HEIGHT},
 			fontSize,
 			0,
 			moreRareDropsColour
@@ -497,7 +539,7 @@ int main() {
 		DrawTextEx(
 			font,
 			alwaysDropEquipmentString,
-			{PADDING_LEFT, (float)y++ * LINE_HEIGHT},
+			(Vector2){PADDING_LEFT, (float)y++ * LINE_HEIGHT},
 			fontSize,
 			0,
 			guaranteedEquipmentColour
@@ -505,7 +547,7 @@ int main() {
 		DrawTextEx(
 			font,
 			perfectSwordplayString,
-			{PADDING_LEFT, (float)y++ * LINE_HEIGHT},
+			(Vector2){PADDING_LEFT, (float)y++ * LINE_HEIGHT},
 			fontSize,
 			0,
 			perfectSwordplayColour
@@ -513,7 +555,7 @@ int main() {
 		DrawTextEx(
 			font,
 			perfectBushidoString,
-			{PADDING_LEFT, (float)y++ * LINE_HEIGHT},
+			(Vector2){PADDING_LEFT, (float)y++ * LINE_HEIGHT},
 			fontSize,
 			0,
 			perfectBushidoColour
@@ -521,18 +563,18 @@ int main() {
 		DrawTextEx(
 			font,
 			perfectFuryString,
-			{PADDING_LEFT, (float)y++ * LINE_HEIGHT},
+			(Vector2){PADDING_LEFT, (float)y++ * LINE_HEIGHT},
 			fontSize,
 			0,
 			perfectFuryColour
 		);
 
 		if (rareStealSuccessValue != RARE_STEAL_CHANCE_ORIGINAL_2) {
-			DrawTextEx(font, "(", {PADDING_LEFT + rareStealTextWidth + 6, 50}, fontSize, 0, BLACK);
+			DrawTextEx(font, "(", (Vector2){PADDING_LEFT + rareStealTextWidth + 6, 50}, fontSize, 0, BLACK);
 			DrawTextEx(
 				font,
 				")",
-				{
+				(Vector2){
 					PADDING_LEFT + rareStealTextWidth + fiftyPercentWidth + hundredPercentWidth + zeroPercentWidth + 22,
 					50
 				},
@@ -543,7 +585,7 @@ int main() {
 			DrawTextEx(
 				font,
 				"50%",
-				{PADDING_LEFT + rareStealTextWidth + 12, 50},
+				(Vector2){PADDING_LEFT + rareStealTextWidth + 12, 50},
 				fontSize,
 				0,
 				rareStealSuccessValue == RARE_STEAL_CHANCE_NEW_2_50_50 ? GREEN : BLACK
@@ -551,7 +593,7 @@ int main() {
 			DrawTextEx(
 				font,
 				"100%",
-				{PADDING_LEFT + rareStealTextWidth + fiftyPercentWidth + 16, 50},
+				(Vector2){PADDING_LEFT + rareStealTextWidth + fiftyPercentWidth + 16, 50},
 				fontSize,
 				0,
 				rareStealSuccessValue == NO_OP ? GREEN : BLACK
@@ -559,7 +601,7 @@ int main() {
 			DrawTextEx(
 				font,
 				"0%",
-				{PADDING_LEFT + rareStealTextWidth + fiftyPercentWidth + hundredPercentWidth + 22, 50},
+				(Vector2){PADDING_LEFT + rareStealTextWidth + fiftyPercentWidth + hundredPercentWidth + 22, 50},
 				fontSize,
 				0,
 				rareStealSuccessValue == RARE_STEAL_CHANCE_NEW_2_NEVER ? GREEN : BLACK
@@ -567,11 +609,11 @@ int main() {
 		}
 
 		if (moreRareDropsValue != MORE_RARE_DROPS_ORIGINAL) {
-			DrawTextEx(font, "(", {PADDING_LEFT + rareDropTextWidth + 6, 102}, fontSize, 0, BLACK);
+			DrawTextEx(font, "(", (Vector2){PADDING_LEFT + rareDropTextWidth + 6, 102}, fontSize, 0, BLACK);
 			DrawTextEx(
 				font,
 				")",
-				{
+				(Vector2){
 					PADDING_LEFT + rareDropTextWidth + fiftyPercentWidth + hundredPercentWidth + zeroPercentWidth + 22,
 					102 // TODO: derive this the same way we get the position of the cheat label
 				},
@@ -582,7 +624,7 @@ int main() {
 			DrawTextEx(
 				font,
 				"50%",
-				{PADDING_LEFT + rareDropTextWidth + 12, 102},
+				(Vector2){PADDING_LEFT + rareDropTextWidth + 12, 102},
 				fontSize,
 				0,
 				moreRareDropsValue == MORE_RARE_DROPS_NEW_50_50 ? GREEN : BLACK
@@ -590,7 +632,7 @@ int main() {
 			DrawTextEx(
 				font,
 				"100%",
-				{PADDING_LEFT + rareDropTextWidth + fiftyPercentWidth + 16, 102},
+				(Vector2){PADDING_LEFT + rareDropTextWidth + fiftyPercentWidth + 16, 102},
 				fontSize,
 				0,
 				moreRareDropsValue == MORE_RARE_DROPS_NEW_ALWAYS ? GREEN : BLACK
@@ -598,7 +640,7 @@ int main() {
 			DrawTextEx(
 				font,
 				"0%",
-				{PADDING_LEFT + rareDropTextWidth + fiftyPercentWidth + hundredPercentWidth + 22, 102},
+				(Vector2){PADDING_LEFT + rareDropTextWidth + fiftyPercentWidth + hundredPercentWidth + 22, 102},
 				fontSize,
 				0,
 				moreRareDropsValue == MORE_RARE_DROPS_NEW_NEVER ? GREEN : BLACK
