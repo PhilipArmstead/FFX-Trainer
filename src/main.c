@@ -26,6 +26,10 @@ typedef struct {
 } CharacterString;
 
 int main() {
+#ifdef IS_RELEASE
+	SetTraceLogLevel(LOG_NONE);
+#endif
+
 #ifdef _WIN32
 	int pid = 0;
 	HANDLE fd = getProcessFileDescriptor(&pid);

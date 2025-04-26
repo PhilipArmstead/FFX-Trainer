@@ -9,6 +9,10 @@ if (NOT CMAKE_BUILD_TYPE)
 	set(CMAKE_BUILD_TYPE Release CACHE STRING "Build type" FORCE)
 endif ()
 
+if (CMAKE_BUILD_TYPE STREQUAL "Release")
+	add_compile_definitions(IS_RELEASE)
+endif ()
+
 # Find or fetch Raylib
 include(FetchContent)
 fetchcontent_declare(
