@@ -15,3 +15,10 @@ const char *alwaysDropEquipmentString = "5) Toggle always drop equipment";
 const char *perfectSwordplayString = "6) Toggle perfect Swordplay";
 const char *perfectBushidoString = "7) Toggle perfect Bushido";
 const char *perfectFuryString = "8) Toggle perfect Fury";
+
+#define PERFECT_TIDUS_OD_TOGGLED (1 << 0)
+#define PERFECT_LULU_OD_TOGGLED (1 << 1)
+#define PERFECT_AURON_OD_TOGGLED (1 << 2)
+#define GUARANTEED_STEAL_TOGGLED (1 << 3)
+#define ADDED_STEAL_TOGGLED (1 << 4)
+#define GUARANTEED_EQUIPMENT_DROP_TOGGLED (1 << 5)

@@ -48,15 +48,18 @@ int main() {
 	char battleCountString[8] = {0};
 	CharacterString kills = {0};
 	CharacterString victories = {0};
-	// TODO: use bitmask instead of all of these booleans
-	bool isPerfectSwordplayToggled = false;
-	bool isStealSuccessRateToggled = false;
-	bool isAddedStealToggled = false;
-	bool isGuaranteedEquipmentToggled = false;
+
+	/**
+	 * Bit 1 = is perfect Tidus OD toggled?
+	 * Bit 2 = is perfect Lulu OD toggled?
+	 * Bit 3 = is perfect Auron OD toggled?
+	 * Bit 4 = is steal success rate toggled?
+	 * Bit 5 = is added steal toggled?
+	 * Bit 6 = is guaranteed equipment drops toggled?
+	 */
+	uint8_t mask = 0;
 	uint8_t rareStealSuccessValue = RARE_STEAL_CHANCE_ORIGINAL_2;
 	uint8_t moreRareDropsValue = MORE_RARE_DROPS_ORIGINAL;
-	bool isPerfectFuryToggled = false;
-	bool isPerfectBushidoToggled = false;
 	Color stealSuccessRateColour = BLACK;
 	Color guaranteedEquipmentColour = BLACK;
 	Color rareStealSuccessRateColour = BLACK;
@@ -107,7 +110,7 @@ int main() {
 
 			switch (keyPressed) {
 				case '1': {
-					uint8_t *bytes = isStealSuccessRateToggled
+					uint8_t *bytes = mask & GUARANTEED_STEAL_TOGGLED
 						? (uint8_t[4]){
 							STEAL_CHANCE_ORIGINAL_0,
 							STEAL_CHANCE_ORIGINAL_1,
@@ -120,8 +123,7 @@ int main() {
 							STEAL_CHANCE_NEW_2,
 							STEAL_CHANCE_NEW_3
 						};
-					writeToMemory(fd, base, STEAL_CHANCE_LOCATION, 4, bytes);
-					framesSinceDataUpdate = FPS * 5;
+					writeToMemory(fd, base, STEAL_CHANCE_LOCATION, 4, bytes);;
 					break;
 				}
 				case '2': {
@@ -144,7 +146,7 @@ int main() {
 					break;
 				}
 				case '3': {
-					uint8_t *bytes = isAddedStealToggled
+					uint8_t *bytes = mask & ADDED_STEAL_TOGGLED
 						? (uint8_t[2]){
 							ADDED_STEAL_ORIGINAL_0,
 							ADDED_STEAL_ORIGINAL_1,
@@ -170,7 +172,7 @@ int main() {
 					break;
 				}
 				case '5': {
-					uint8_t *bytes = isGuaranteedEquipmentToggled
+					uint8_t *bytes = mask & GUARANTEED_EQUIPMENT_DROP_TOGGLED
 						? (uint8_t[1]){ALWAYS_DROP_EQUIPMENT_ORIGINAL}
 						: (uint8_t[1]){ALWAYS_DROP_EQUIPMENT_NEW};
 					writeToMemory(fd, base, ALWAYS_DROP_EQUIPMENT_LOCATION, 1, bytes);
@@ -178,7 +180,7 @@ int main() {
 					break;
 				}
 				case '6': {
-					uint8_t *bytes = isPerfectSwordplayToggled
+					uint8_t *bytes = mask & PERFECT_TIDUS_OD_TOGGLED
 						? (uint8_t[6]){TIDUS_PERFECT_LIMIT_ORIGINAL}
 						: (uint8_t[6]){TIDUS_PERFECT_LIMIT_NEW};
 					writeToMemory(fd, base, TIDUS_PERFECT_LIMIT_LOCATION, 6, bytes);
@@ -186,7 +188,7 @@ int main() {
 					break;
 				}
 				case '7': {
-					uint8_t *bytes = isPerfectBushidoToggled
+					uint8_t *bytes = mask & PERFECT_AURON_OD_TOGGLED
 						? (uint8_t[7]){AURON_PERFECT_LIMIT_ORIGINAL}
 						: (uint8_t[7]){AURON_PERFECT_LIMIT_NEW};
 					writeToMemory(fd, base, AURON_PERFECT_LIMIT_LOCATION, 7, bytes);
@@ -194,7 +196,7 @@ int main() {
 					break;
 				}
 				case '8': {
-					uint8_t *bytes = isPerfectFuryToggled
+					uint8_t *bytes = mask & PERFECT_LULU_OD_TOGGLED
 						? (uint8_t[13]){LULU_PERFECT_LIMIT_ORIGINAL}
 						: (uint8_t[13]){LULU_PERFECT_LIMIT_NEW};
 					writeToMemory(fd, base, LULU_PERFECT_LIMIT_LOCATION, 13, bytes);
@@ -292,36 +294,59 @@ int main() {
 				snprintf(victories.rikku, 8, "%lu", hexBytesToInt(buffer, 4));
 
 				readFromMemory(fd, base, STEAL_CHANCE_LOCATION, 4, buffer);
-				isStealSuccessRateToggled =
+				if (
 					buffer[0] != STEAL_CHANCE_ORIGINAL_0 ||
 					buffer[1] != STEAL_CHANCE_ORIGINAL_1 ||
 					buffer[2] != STEAL_CHANCE_ORIGINAL_2 ||
-					buffer[3] != STEAL_CHANCE_ORIGINAL_3;
+					buffer[3] != STEAL_CHANCE_ORIGINAL_3
+				) {
+					mask |= GUARANTEED_STEAL_TOGGLED;
+				} else {
+					mask &= ~GUARANTEED_STEAL_TOGGLED;
+				}
 				readFromMemory(fd, base, RARE_STEAL_CHANCE_LOCATION + 2, 1, buffer);
 				rareStealSuccessValue = buffer[0];
 				readFromMemory(fd, base, ADDED_STEAL_LOCATION, 3, buffer);
-				isAddedStealToggled =
-					buffer[0] != ADDED_STEAL_ORIGINAL_0 ||
-					buffer[1] != ADDED_STEAL_ORIGINAL_1;
+				if (buffer[0] != ADDED_STEAL_ORIGINAL_0 || buffer[1] != ADDED_STEAL_ORIGINAL_1) {
+					mask |= ADDED_STEAL_TOGGLED;
+				} else {
+					mask &= ~ADDED_STEAL_TOGGLED;
+				}
 				readFromMemory(fd, base, MORE_RARE_DROPS_LOCATION, 1, buffer);
 				moreRareDropsValue = buffer[0];
 				readFromMemory(fd, base, TIDUS_PERFECT_LIMIT_LOCATION + 5, 1, buffer);
-				isPerfectSwordplayToggled = buffer[0] == NO_OP;
+				if (buffer[0] == NO_OP) {
+					mask |= PERFECT_TIDUS_OD_TOGGLED;
+				} else {
+					mask &= ~PERFECT_TIDUS_OD_TOGGLED;
+				}
 				readFromMemory(fd, base, LULU_PERFECT_LIMIT_LOCATION + 7, 1, buffer);
-				isPerfectFuryToggled = buffer[0] == NO_OP;
+				if (buffer[0] == NO_OP) {
+					mask |= PERFECT_LULU_OD_TOGGLED;
+				} else {
+					mask &= ~PERFECT_LULU_OD_TOGGLED;
+				}
 				readFromMemory(fd, base, AURON_PERFECT_LIMIT_LOCATION + 5, 1, buffer);
-				isPerfectBushidoToggled = buffer[0] == NO_OP;
+				if (buffer[0] == NO_OP) {
+					mask |= PERFECT_AURON_OD_TOGGLED;
+				} else {
+					mask &= ~PERFECT_AURON_OD_TOGGLED;
+				}
 				readFromMemory(fd, base, ALWAYS_DROP_EQUIPMENT_LOCATION, 1, buffer);
-				isGuaranteedEquipmentToggled = buffer[0] != ALWAYS_DROP_EQUIPMENT_ORIGINAL;
+				if (buffer[0] != ALWAYS_DROP_EQUIPMENT_ORIGINAL) {
+					mask |= GUARANTEED_EQUIPMENT_DROP_TOGGLED;
+				} else {
+					mask &= ~GUARANTEED_EQUIPMENT_DROP_TOGGLED;
+				}
 
-				stealSuccessRateColour = isStealSuccessRateToggled ? GREEN : BLACK;
-				addedStealColour = isAddedStealToggled ? GREEN : BLACK;
+				stealSuccessRateColour = mask & GUARANTEED_STEAL_TOGGLED ? GREEN : BLACK;
+				addedStealColour = mask & ADDED_STEAL_TOGGLED ? GREEN : BLACK;
 				rareStealSuccessRateColour = rareStealSuccessValue != RARE_STEAL_CHANCE_ORIGINAL_2 ? GREEN : BLACK;
-				guaranteedEquipmentColour = isGuaranteedEquipmentToggled ? GREEN : BLACK;
+				guaranteedEquipmentColour = mask & GUARANTEED_EQUIPMENT_DROP_TOGGLED ? GREEN : BLACK;
 				moreRareDropsColour = moreRareDropsValue != MORE_RARE_DROPS_ORIGINAL ? GREEN : BLACK;
-				perfectFuryColour = isPerfectFuryToggled ? GREEN : BLACK;
-				perfectBushidoColour = isPerfectBushidoToggled ? GREEN : BLACK;
-				perfectSwordplayColour = isPerfectSwordplayToggled ? GREEN : BLACK;
+				perfectFuryColour = mask & PERFECT_LULU_OD_TOGGLED ? GREEN : BLACK;
+				perfectBushidoColour = mask & PERFECT_AURON_OD_TOGGLED ? GREEN : BLACK;
+				perfectSwordplayColour = mask & PERFECT_TIDUS_OD_TOGGLED ? GREEN : BLACK;
 
 				framesSinceDataUpdate = 0;
 			}
