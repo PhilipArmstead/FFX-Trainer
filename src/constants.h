@@ -9,7 +9,7 @@
 #define VERSION_PATCH 0
 
 #define LINE_HEIGHT 26
-#define PADDING_LEFT 24
+#define PADDING 24
 #define STATS_RIGHT 75
 
 const char *perfectStealString = "1) Toggle 100% steal chance";
