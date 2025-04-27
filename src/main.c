@@ -113,6 +113,10 @@ int main() {
 	const float rikkuKillsWidth = MeasureTextEx(font, rikkuKillsString, fontSize, 0).x;
 	const float rikkuVictoriesWidth = MeasureTextEx(font, rikkuVictoriesString, fontSize, 0).x;
 
+	char version[8] = {0};
+	snprintf(version, 8, "v%d.%d.%d", VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH);
+	const float versionHeight = MeasureTextEx(font, version, fontSize, 0).y;
+
 	while (true) {
 		uintptr_t base = 0;
 		if (WindowShouldClose()) {
@@ -646,6 +650,15 @@ int main() {
 				moreRareDropsValue == MORE_RARE_DROPS_NEW_NEVER ? GREEN : BLACK
 			);
 		}
+
+		DrawTextEx(
+			font,
+			version,
+			(Vector2){PADDING_LEFT, (float)SCREEN_HEIGHT - versionHeight - PADDING_LEFT},
+			fontSize,
+			0,
+			BLACK
+		);
 
 		window_afterDraw();
 
