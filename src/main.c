@@ -216,9 +216,14 @@ int main() {
 				}
 				case '8': {
 					uint8_t *bytes = mask & PERFECT_LULU_OD_TOGGLED
-						? (uint8_t[13]){LULU_PERFECT_LIMIT_ORIGINAL}
-						: (uint8_t[13]){LULU_PERFECT_LIMIT_NEW};
-					writeToMemory(fd, base, LULU_PERFECT_LIMIT_LOCATION, 13, bytes);
+						// TODO: put byte length in constant
+						? (uint8_t[6]){LULU_PERFECT_LIMIT_ORIGINAL_1}
+						: (uint8_t[6]){LULU_PERFECT_LIMIT_NEW_1};
+					writeToMemory(fd, base, LULU_PERFECT_LIMIT_LOCATION_1, 6, bytes);
+					bytes = mask & PERFECT_LULU_OD_TOGGLED
+						? (uint8_t[7]){LULU_PERFECT_LIMIT_ORIGINAL_2}
+						: (uint8_t[7]){LULU_PERFECT_LIMIT_NEW_2};
+					writeToMemory(fd, base, LULU_PERFECT_LIMIT_LOCATION_2, 7, bytes);
 					framesSinceDataUpdate = FPS * 5;
 					break;
 				}
@@ -339,7 +344,7 @@ int main() {
 				} else {
 					mask &= ~PERFECT_TIDUS_OD_TOGGLED;
 				}
-				readFromMemory(fd, base, LULU_PERFECT_LIMIT_LOCATION + 7, 1, buffer);
+				readFromMemory(fd, base, LULU_PERFECT_LIMIT_LOCATION_2 + 5, 1, buffer);
 				if (buffer[0] == NO_OP) {
 					mask |= PERFECT_LULU_OD_TOGGLED;
 				} else {

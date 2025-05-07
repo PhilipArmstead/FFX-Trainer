@@ -13,7 +13,8 @@
 
 #define TIDUS_PERFECT_LIMIT_LOCATION 0x4923ee
 #define AURON_PERFECT_LIMIT_LOCATION 0x490f11
-#define LULU_PERFECT_LIMIT_LOCATION 0x491c18
+#define LULU_PERFECT_LIMIT_LOCATION_1 0x491c18
+#define LULU_PERFECT_LIMIT_LOCATION_2 0x491f76
 
 #define TOTAL_BATTLES_LOCATION 0xd307a4
 #define TIDUS_VICTORIES_LOCATION 0xd320ac
@@ -39,7 +40,8 @@
 
 #define TIDUS_PERFECT_LIMIT_LOCATION 0x8923ee
 #define AURON_PERFECT_LIMIT_LOCATION 0x890f11
-#define LULU_PERFECT_LIMIT_LOCATION 0x891c18
+#define LULU_PERFECT_LIMIT_LOCATION_1 0x891c18
+#define LULU_PERFECT_LIMIT_LOCATION_2 0x891f76
 
 #define TOTAL_BATTLES_LOCATION 0x11307a4
 #define TIDUS_VICTORIES_LOCATION 0x11320ac
@@ -98,10 +100,15 @@
 // TODO: move the jump somewhere that means we never see the timer?
 #define AURON_PERFECT_LIMIT_NEW 0xe9, 0xb0, 0x00, 0x00, 0x00, NO_OP, NO_OP
 
-#define LULU_PERFECT_LIMIT_ORIGINAL 0xd8, 0x1d, 0x50, 0xf7, 0x33, 0x01, 0xdf, 0xe0, 0xf6, 0xc4, 0x01, 0x75, 0x1a
-// mov [luluFuryCount], 12; jmp 0x891f30
-// TODO: this address isn't right on Windows
+// fcomp dword ptr [DAT_0133f750]
+#define LULU_PERFECT_LIMIT_ORIGINAL_1 0xd8, 0x1d, 0x50, 0xf7, 0x33, 0x01
+// jmp 0x891f30
 // TODO: move the jump somewhere that means we never see the timer?
-#define LULU_PERFECT_LIMIT_NEW 0xc6, 0x05, 0xdf, 0xd6, 0x33, 0x01, 0x0c, NO_OP, 0xe9, 0x0b, 0x03, 0x00, 0x00
+#define LULU_PERFECT_LIMIT_NEW_1 0xe9, 0x13, 0x03, 0x00, 0x00, NO_OP
+
+// movzx eax, [luluFuryCount]
+#define LULU_PERFECT_LIMIT_ORIGINAL_2 0x0f, 0xb6, 0x05, 0xdf, 0xd6, 0x33, 0x01
+// mov eax, 12; nop; nop
+#define LULU_PERFECT_LIMIT_NEW_2 0xb8, 0x0C, 0x00, 0x00, 0x00, NO_OP, NO_OP
 
 // TODO: add Wakka's perfect reels
