@@ -55,7 +55,7 @@ static inline long openProcess() {
 	char path[64];
 	fgets(path, sizeof(path), fp);
 	const long pid = strtol(path, NULL, 10);
-	fclose(fp);
+	pclose(fp);
 
 	return pid;
 }
