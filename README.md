@@ -1,18 +1,6 @@
 Final Fantasy X Trainer
 ===
 
-## Building
-
-This project uses Make to compile in to the `build` directory.
-
-```shell
-git clone git@github.com:PhilipArmstead/FFX-Trainer.git ffx-trainer
-cd ffx-trainer
-make
-cd build
-./ffx-trainer
-```
-
 ## About this tool
 
 This application enables certain cheats for the Steam version of
@@ -35,8 +23,22 @@ This tool allows for the following cheats:
 - Always drop equipment
 - Auto-succeed Swordplay Overdrive
 - Auto-succeed Bushido Overdrive
-- Begin Fury Overdrive at a count of 12
+- Skip Fury Overdrive with a count of 12
 
 Additionally, statistics for battles, kills and victories are shown.
 
 ![screenshot](./docs/screenshot.png)
+
+## Building
+
+This project uses CMake to install and build dependencies.
+
+```shell
+git clone git@github.com:PhilipArmstead/FFX-Trainer.git ffx-trainer
+cd ffx-trainer
+mkdir build
+cd build
+cmake ..
+make
+./main
+```
