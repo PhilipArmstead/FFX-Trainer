@@ -56,12 +56,4 @@ else ()
 	target_compile_definitions(${PROJECT_NAME} PRIVATE PLATFORM_LINUX)
 endif ()
 
-set(ASSETS_DIR "assets")
-
-add_custom_target(copy_resources
-	COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/${ASSETS_DIR} ${CMAKE_BINARY_DIR}/${ASSETS_DIR}
-	COMMENT "Copying assets to build directory"
-)
-add_dependencies(${PROJECT_NAME} copy_resources)
-
 message(STATUS "CMake setup complete. Run 'make' or 'cmake --build .' to compile.")
