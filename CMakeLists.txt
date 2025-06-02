@@ -41,19 +41,19 @@ endif ()
 file(GLOB_RECURSE SRC_FILES "src/*.c")
 
 # Set up executable targets
-add_executable(main ${SRC_FILES})
-target_include_directories(main PRIVATE ./include ${raylib_SOURCE_DIR}/src)
-target_link_libraries(main PRIVATE raylib)
+add_executable(${PROJECT_NAME} WIN32 ${SRC_FILES} resources.rc)
+target_include_directories(${PROJECT_NAME} PRIVATE ./include ${raylib_SOURCE_DIR}/src)
+target_link_libraries(${PROJECT_NAME} PRIVATE raylib)
 
 # Platform-specific settings
 if (APPLE)
 	set(CMAKE_OSX_ARCHITECTURES "arm64;x86_64" CACHE STRING "Build architectures for macOS" FORCE)
-	target_compile_definitions(main PRIVATE PLATFORM_OSX)
-	target_link_libraries(main PRIVATE "-framework OpenGL -framework Cocoa -framework IOKit -framework CoreVideo")
+	target_compile_definitions(${PROJECT_NAME} PRIVATE PLATFORM_OSX)
+	target_link_libraries(${PROJECT_NAME} PRIVATE "-framework OpenGL -framework Cocoa -framework IOKit -framework CoreVideo")
 elseif (WIN32)
-	target_compile_definitions(main PRIVATE PLATFORM_WINDOWS)
+	target_compile_definitions(${PROJECT_NAME} PRIVATE PLATFORM_WINDOWS)
 else ()
-	target_compile_definitions(main PRIVATE PLATFORM_LINUX)
+	target_compile_definitions(${PROJECT_NAME} PRIVATE PLATFORM_LINUX)
 endif ()
 
 set(ASSETS_DIR "assets")
@@ -62,6 +62,6 @@ add_custom_target(copy_resources
 	COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/${ASSETS_DIR} ${CMAKE_BINARY_DIR}/${ASSETS_DIR}
 	COMMENT "Copying assets to build directory"
 )
-add_dependencies(main copy_resources)
+add_dependencies(${PROJECT_NAME} copy_resources)
 
 message(STATUS "CMake setup complete. Run 'make' or 'cmake --build .' to compile.")

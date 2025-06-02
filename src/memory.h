@@ -38,18 +38,18 @@ uintptr_t getModuleBaseAddress(DWORD procId, const char *modName) {
 
 static inline BOOL readFromMemory(HANDLE fd, DWORD base, DWORD address, SIZE_T size, BYTE *buffer) {
 	SIZE_T *bytesRead = {0};
-	return ReadProcessMemory(fd, (LPVOID) (base + address), buffer, size, bytesRead);
+	return ReadProcessMemory(fd, (void *) (uintptr_t) (base + address), buffer, size, bytesRead);
 }
 
 static inline WINBOOL writeToMemory(HANDLE fd, DWORD base, DWORD address, SIZE_T size, BYTE *buffer) {
 	SIZE_T *bytesRead = {0};
-	return WriteProcessMemory(fd, (LPVOID) (base + address), buffer, size, bytesRead);
+	return WriteProcessMemory(fd, (void *) (uintptr_t) (base + address), buffer, size, bytesRead);
 }
 
 static inline uint8_t readByte(HANDLE fd, DWORD base, DWORD address) {
 	SIZE_T *bytesRead = {0};
 	uint8_t byte;
-	ReadProcessMemory(fd, (LPVOID) (base + address), &byte, 1, bytesRead);
+	ReadProcessMemory(fd, (void *) (uintptr_t) (base + address), &byte, 1, bytesRead);
 
 	return byte;
 }

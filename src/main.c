@@ -75,6 +75,8 @@ int main() {
 	bool isGameRunning = fd != -1;
 #endif
 
+	uintptr_t base = 0;
+
 #ifdef _WIN32
 	if (isGameRunning) {
 		base = getModuleBaseAddress(pid, "FFX.exe");
@@ -118,7 +120,6 @@ int main() {
 	const float versionHeight = MeasureTextEx(font, version, fontSize, 0).y;
 
 	while (true) {
-		uintptr_t base = 0;
 		if (WindowShouldClose()) {
 			break;
 		}
@@ -288,42 +289,42 @@ int main() {
 					continue;
 				}
 
-				snprintf(battleCountString, 8, "%lu", battleCount);
+				snprintf(battleCountString, 8, LONG_SPECIFIER, battleCount);
 				readFromMemory(fd, base, TIDUS_KILLS_LOCATION, 4, buffer);
-				snprintf(kills.tidus, 8, "%lu", hexBytesToInt(buffer, 4));
+				snprintf(kills.tidus, 8, LONG_SPECIFIER, hexBytesToInt(buffer, 4));
 				readFromMemory(fd, base, TIDUS_VICTORIES_LOCATION, 4, buffer);
-				snprintf(victories.tidus, 8, "%lu", hexBytesToInt(buffer, 4));
+				snprintf(victories.tidus, 8, LONG_SPECIFIER, hexBytesToInt(buffer, 4));
 				readFromMemory(fd, base, YUNA_KILLS_LOCATION, 4, buffer);
-				snprintf(kills.yuna, 8, "%lu", hexBytesToInt(buffer, 4));
-				snprintf(victories.yuna, 8, "%lu", yunaVictories);
+				snprintf(kills.yuna, 8, LONG_SPECIFIER, hexBytesToInt(buffer, 4));
+				snprintf(victories.yuna, 8, LONG_SPECIFIER, yunaVictories);
 				readFromMemory(fd, base, AURON_KILLS_LOCATION, 4, buffer);
-				snprintf(kills.auron, 8, "%lu", hexBytesToInt(buffer, 4));
+				snprintf(kills.auron, 8, LONG_SPECIFIER, hexBytesToInt(buffer, 4));
 				readFromMemory(fd, base, AURON_VICTORIES_LOCATION, 4, buffer);
-				snprintf(victories.auron, 8, "%lu", hexBytesToInt(buffer, 4));
+				snprintf(victories.auron, 8, LONG_SPECIFIER, hexBytesToInt(buffer, 4));
 				readFromMemory(fd, base, KIMAHRI_KILLS_LOCATION, 4, buffer);
-				snprintf(kills.kimahri, 8, "%lu", hexBytesToInt(buffer, 4));
+				snprintf(kills.kimahri, 8, LONG_SPECIFIER, hexBytesToInt(buffer, 4));
 				readFromMemory(fd, base, KIMAHRI_VICTORIES_LOCATION, 4, buffer);
-				snprintf(victories.kimahri, 8, "%lu", hexBytesToInt(buffer, 4));
+				snprintf(victories.kimahri, 8, LONG_SPECIFIER, hexBytesToInt(buffer, 4));
 				readFromMemory(fd, base, RIKKU_KILLS_LOCATION, 4, buffer);
 				readFromMemory(fd, base, WAKKA_KILLS_LOCATION, 4, buffer);
-				snprintf(kills.wakka, 8, "%lu", hexBytesToInt(buffer, 4));
+				snprintf(kills.wakka, 8, LONG_SPECIFIER, hexBytesToInt(buffer, 4));
 				readFromMemory(fd, base, WAKKA_VICTORIES_LOCATION, 4, buffer);
-				snprintf(victories.wakka, 8, "%lu", hexBytesToInt(buffer, 4));
+				snprintf(victories.wakka, 8, LONG_SPECIFIER, hexBytesToInt(buffer, 4));
 				readFromMemory(fd, base, LULU_KILLS_LOCATION, 4, buffer);
-				snprintf(kills.lulu, 8, "%lu", hexBytesToInt(buffer, 4));
+				snprintf(kills.lulu, 8, LONG_SPECIFIER, hexBytesToInt(buffer, 4));
 				readFromMemory(fd, base, LULU_VICTORIES_LOCATION, 4, buffer);
-				snprintf(victories.lulu, 8, "%lu", hexBytesToInt(buffer, 4));
-				snprintf(kills.rikku, 8, "%lu", hexBytesToInt(buffer, 4));
+				snprintf(victories.lulu, 8, LONG_SPECIFIER, hexBytesToInt(buffer, 4));
+				snprintf(kills.rikku, 8, LONG_SPECIFIER, hexBytesToInt(buffer, 4));
 				readFromMemory(fd, base, RIKKU_VICTORIES_LOCATION, 4, buffer);
-				snprintf(victories.rikku, 8, "%lu", hexBytesToInt(buffer, 4));
+				snprintf(victories.rikku, 8, LONG_SPECIFIER, hexBytesToInt(buffer, 4));
 
 				readFromMemory(fd, base, STEAL_CHANCE_LOCATION, 4, buffer);
 				if (
 					buffer[0] != STEAL_CHANCE_ORIGINAL_0 ||
-					buffer[1] != STEAL_CHANCE_ORIGINAL_1 ||
-					buffer[2] != STEAL_CHANCE_ORIGINAL_2 ||
-					buffer[3] != STEAL_CHANCE_ORIGINAL_3
-				) {
+						buffer[1] != STEAL_CHANCE_ORIGINAL_1 ||
+						buffer[2] != STEAL_CHANCE_ORIGINAL_2 ||
+						buffer[3] != STEAL_CHANCE_ORIGINAL_3
+					) {
 					mask |= GUARANTEED_STEAL_TOGGLED;
 				} else {
 					mask &= ~GUARANTEED_STEAL_TOGGLED;

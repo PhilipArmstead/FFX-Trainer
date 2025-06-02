@@ -5,7 +5,7 @@
 #pragma once
 
 #define VERSION_MAJOR 0
-#define VERSION_MINOR 10
+#define VERSION_MINOR 9
 #define VERSION_PATCH 0
 
 #define LINE_HEIGHT 26
@@ -43,3 +43,9 @@ const char *rikkuVictoriesString = "Rikku victories:";
 #define GUARANTEED_STEAL_TOGGLED (1 << 3)
 #define ADDED_STEAL_TOGGLED (1 << 4)
 #define GUARANTEED_EQUIPMENT_DROP_TOGGLED (1 << 5)
+
+#ifdef _WIN32
+#define LONG_SPECIFIER "%llu"
+#else
+#define LONG_SPECIFIER "%lu"
+#endif
