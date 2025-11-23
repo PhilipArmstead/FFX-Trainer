@@ -83,41 +83,41 @@ int main() {
 	}
 	#endif
 
-	const uint16_t loadButtonWidth = 175;
+	#define LOAD_BUTTON_WIDTH 150
 	const Rectangle16 loadButtonRectangle = {
-		.height = 36,
-		.width = loadButtonWidth,
+		.height = 32,
+		.width = LOAD_BUTTON_WIDTH,
 		.y = 16,
-		.x = SCREEN_WIDTH - loadButtonWidth - 16
+		.x = SCREEN_WIDTH - LOAD_BUTTON_WIDTH - 16
 	};
 
+	#define FONT_SIZE 18
+	Font font = LoadFontFromMemory(".ttf", FreeSans_ttf, 0, FONT_SIZE, 0, 0);
+	const float rareStealTextWidth = MeasureTextEx(font, rareStealString, FONT_SIZE, 0).x;
+	const float rareDropTextWidth = MeasureTextEx(font, rareDropString, FONT_SIZE, 0).x;
+	const float fiftyPercentWidth = MeasureTextEx(font, "50%", FONT_SIZE, 0).x;
+	const float hundredPercentWidth = MeasureTextEx(font, "100%", FONT_SIZE, 0).x;
+	const float zeroPercentWidth = MeasureTextEx(font, "0%", FONT_SIZE, 0).x;
+	const float battlesWidth = MeasureTextEx(font, battlesString, FONT_SIZE, 0).x;
+	const float tidusKillsWidth = MeasureTextEx(font, tidusKillsString, FONT_SIZE, 0).x;
+	const float tidusVictoriesWidth = MeasureTextEx(font, tidusVictoriesString, FONT_SIZE, 0).x;
+	const float yunaKillsWidth = MeasureTextEx(font, yunaKillsString, FONT_SIZE, 0).x;
+	const float yunaVictoriesWidth = MeasureTextEx(font, yunaVictoriesString, FONT_SIZE, 0).x;
+	const float auronKillsWidth = MeasureTextEx(font, auronKillsString, FONT_SIZE, 0).x;
+	const float auronVictoriesWidth = MeasureTextEx(font, auronVictoriesString, FONT_SIZE, 0).x;
+	const float wakkaKillsWidth = MeasureTextEx(font, wakkaKillsString, FONT_SIZE, 0).x;
+	const float wakkaVictoriesWidth = MeasureTextEx(font, wakkaVictoriesString, FONT_SIZE, 0).x;
+	const float luluKillsWidth = MeasureTextEx(font, luluKillsString, FONT_SIZE, 0).x;
+	const float luluVictoriesWidth = MeasureTextEx(font, luluVictoriesString, FONT_SIZE, 0).x;
+	const float kimahriKillsWidth = MeasureTextEx(font, kimahriKillsString, FONT_SIZE, 0).x;
+	const float kimahriVictoriesWidth = MeasureTextEx(font, kimahriVictoriesString, FONT_SIZE, 0).x;
+	const float rikkuKillsWidth = MeasureTextEx(font, rikkuKillsString, FONT_SIZE, 0).x;
+	const float rikkuVictoriesWidth = MeasureTextEx(font, rikkuVictoriesString, FONT_SIZE, 0).x;
 
-	Font font = LoadFontFromMemory(".ttf", FreeSans_ttf, 0, 18, 0, 0);
-	const float fontSize = (float)font.baseSize;
-	const float rareStealTextWidth = MeasureTextEx(font, rareStealString, fontSize, 0).x;
-	const float rareDropTextWidth = MeasureTextEx(font, rareDropString, fontSize, 0).x;
-	const float fiftyPercentWidth = MeasureTextEx(font, "50%", fontSize, 0).x;
-	const float hundredPercentWidth = MeasureTextEx(font, "100%", fontSize, 0).x;
-	const float zeroPercentWidth = MeasureTextEx(font, "0%", fontSize, 0).x;
-	const float battlesWidth = MeasureTextEx(font, battlesString, fontSize, 0).x;
-	const float tidusKillsWidth = MeasureTextEx(font, tidusKillsString, fontSize, 0).x;
-	const float tidusVictoriesWidth = MeasureTextEx(font, tidusVictoriesString, fontSize, 0).x;
-	const float yunaKillsWidth = MeasureTextEx(font, yunaKillsString, fontSize, 0).x;
-	const float yunaVictoriesWidth = MeasureTextEx(font, yunaVictoriesString, fontSize, 0).x;
-	const float auronKillsWidth = MeasureTextEx(font, auronKillsString, fontSize, 0).x;
-	const float auronVictoriesWidth = MeasureTextEx(font, auronVictoriesString, fontSize, 0).x;
-	const float wakkaKillsWidth = MeasureTextEx(font, wakkaKillsString, fontSize, 0).x;
-	const float wakkaVictoriesWidth = MeasureTextEx(font, wakkaVictoriesString, fontSize, 0).x;
-	const float luluKillsWidth = MeasureTextEx(font, luluKillsString, fontSize, 0).x;
-	const float luluVictoriesWidth = MeasureTextEx(font, luluVictoriesString, fontSize, 0).x;
-	const float kimahriKillsWidth = MeasureTextEx(font, kimahriKillsString, fontSize, 0).x;
-	const float kimahriVictoriesWidth = MeasureTextEx(font, kimahriVictoriesString, fontSize, 0).x;
-	const float rikkuKillsWidth = MeasureTextEx(font, rikkuKillsString, fontSize, 0).x;
-	const float rikkuVictoriesWidth = MeasureTextEx(font, rikkuVictoriesString, fontSize, 0).x;
-
-	char version[8] = {0};
-	snprintf(version, 8, "v%d.%d.%d", VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH);
-	const float versionHeight = MeasureTextEx(font, version, fontSize, 0).y;
+	#define VERSION_STRING_WIDTH 8
+	char version[VERSION_STRING_WIDTH] = {0};
+	snprintf(version, VERSION_STRING_WIDTH, "v%d.%d.%d", VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH);
+	const float versionHeight = MeasureTextEx(font, version, FONT_SIZE, 0).y;
 
 	while (true) {
 		if (WindowShouldClose()) {
@@ -265,11 +265,11 @@ int main() {
 				loadButtonRectangle.height,
 				LIGHTGRAY
 			);
-			DrawText("Load game", loadButtonRectangle.x + 8, loadButtonRectangle.y + 4, 30, BLACK);
+			DrawText("Load game", loadButtonRectangle.x + 15, loadButtonRectangle.y + 5, 24, BLACK);
 
 			DrawText(
 				"Could not open game",
-				loadButtonRectangle.x + 8 + 20,
+				loadButtonRectangle.x + 8 + 7,
 				loadButtonRectangle.y + loadButtonRectangle.height + 4,
 				12,
 				RED
@@ -289,34 +289,26 @@ int main() {
 					continue;
 				}
 
+				#define readMemoryInToString(address, string) {								\
+					readFromMemory(fd, base, address, 4, buffer);	\
+					snprintf(string, 8, LONG_SPECIFIER, hexBytesToInt(buffer, 4));	\
+				}
+
 				snprintf(battleCountString, 8, LONG_SPECIFIER, battleCount);
-				readFromMemory(fd, base, TIDUS_KILLS_LOCATION, 4, buffer);
-				snprintf(kills.tidus, 8, LONG_SPECIFIER, hexBytesToInt(buffer, 4));
-				readFromMemory(fd, base, TIDUS_VICTORIES_LOCATION, 4, buffer);
-				snprintf(victories.tidus, 8, LONG_SPECIFIER, hexBytesToInt(buffer, 4));
-				readFromMemory(fd, base, YUNA_KILLS_LOCATION, 4, buffer);
-				snprintf(kills.yuna, 8, LONG_SPECIFIER, hexBytesToInt(buffer, 4));
+				readMemoryInToString(TIDUS_KILLS_LOCATION, kills.tidus);
+				readMemoryInToString(TIDUS_VICTORIES_LOCATION, victories.tidus);
+				readMemoryInToString(YUNA_KILLS_LOCATION, kills.yuna);
 				snprintf(victories.yuna, 8, LONG_SPECIFIER, yunaVictories);
-				readFromMemory(fd, base, AURON_KILLS_LOCATION, 4, buffer);
-				snprintf(kills.auron, 8, LONG_SPECIFIER, hexBytesToInt(buffer, 4));
-				readFromMemory(fd, base, AURON_VICTORIES_LOCATION, 4, buffer);
-				snprintf(victories.auron, 8, LONG_SPECIFIER, hexBytesToInt(buffer, 4));
-				readFromMemory(fd, base, KIMAHRI_KILLS_LOCATION, 4, buffer);
-				snprintf(kills.kimahri, 8, LONG_SPECIFIER, hexBytesToInt(buffer, 4));
-				readFromMemory(fd, base, KIMAHRI_VICTORIES_LOCATION, 4, buffer);
-				snprintf(victories.kimahri, 8, LONG_SPECIFIER, hexBytesToInt(buffer, 4));
-				readFromMemory(fd, base, RIKKU_KILLS_LOCATION, 4, buffer);
-				readFromMemory(fd, base, WAKKA_KILLS_LOCATION, 4, buffer);
-				snprintf(kills.wakka, 8, LONG_SPECIFIER, hexBytesToInt(buffer, 4));
-				readFromMemory(fd, base, WAKKA_VICTORIES_LOCATION, 4, buffer);
-				snprintf(victories.wakka, 8, LONG_SPECIFIER, hexBytesToInt(buffer, 4));
-				readFromMemory(fd, base, LULU_KILLS_LOCATION, 4, buffer);
-				snprintf(kills.lulu, 8, LONG_SPECIFIER, hexBytesToInt(buffer, 4));
-				readFromMemory(fd, base, LULU_VICTORIES_LOCATION, 4, buffer);
-				snprintf(victories.lulu, 8, LONG_SPECIFIER, hexBytesToInt(buffer, 4));
-				snprintf(kills.rikku, 8, LONG_SPECIFIER, hexBytesToInt(buffer, 4));
-				readFromMemory(fd, base, RIKKU_VICTORIES_LOCATION, 4, buffer);
-				snprintf(victories.rikku, 8, LONG_SPECIFIER, hexBytesToInt(buffer, 4));
+				readMemoryInToString(AURON_KILLS_LOCATION, kills.auron);
+				readMemoryInToString(AURON_VICTORIES_LOCATION, victories.auron);
+				readMemoryInToString(KIMAHRI_KILLS_LOCATION, kills.kimahri);
+				readMemoryInToString(KIMAHRI_VICTORIES_LOCATION, victories.kimahri);
+				readMemoryInToString(WAKKA_KILLS_LOCATION, kills.wakka);
+				readMemoryInToString(WAKKA_VICTORIES_LOCATION, victories.wakka);
+				readMemoryInToString(LULU_KILLS_LOCATION, kills.lulu);
+				readMemoryInToString(LULU_VICTORIES_LOCATION, victories.lulu);
+				readMemoryInToString(RIKKU_KILLS_LOCATION, kills.rikku);
+				readMemoryInToString(RIKKU_VICTORIES_LOCATION, victories.rikku);
 
 				readFromMemory(fd, base, STEAL_CHANCE_LOCATION, 4, buffer);
 				if (
@@ -377,152 +369,159 @@ int main() {
 			}
 
 			// Print game stats
-			const float statsRight = (float)SCREEN_WIDTH - STATS_RIGHT;
+			#define STATS_RIGHT_FINAL (SCREEN_WIDTH - STATS_RIGHT)
+			#define VALUE_X (STATS_RIGHT_FINAL + 8)
 			const float statsTop = loadButtonRectangle.y;
-			const float valueX = statsRight + 8;
-			DrawTextEx(font, battlesString, (Vector2){statsRight - battlesWidth, statsTop}, fontSize, 0, BLACK);
-			DrawTextEx(font, battleCountString, (Vector2){valueX, statsTop}, fontSize, 0, BLACK);
+			DrawTextEx(font, battlesString, (Vector2){STATS_RIGHT_FINAL - battlesWidth, statsTop}, FONT_SIZE, 0, BLACK);
+			DrawTextEx(font, battleCountString, (Vector2){VALUE_X, statsTop}, FONT_SIZE, 0, BLACK);
 
 			uint8_t i = 1;
 			DrawTextEx(
 				font,
 				tidusKillsString,
-				(Vector2){statsRight - tidusKillsWidth, statsTop + LINE_HEIGHT * i},
-				fontSize,
+				(Vector2){STATS_RIGHT_FINAL - tidusKillsWidth, statsTop + LINE_HEIGHT * i},
+				FONT_SIZE,
 				0,
 				BLACK
 			);
-			DrawTextEx(font, kills.tidus, (Vector2){valueX, statsTop + LINE_HEIGHT * i++}, fontSize, 0, SKYBLUE);
+			DrawTextEx(font, kills.tidus, (Vector2){VALUE_X, statsTop + LINE_HEIGHT * i++}, FONT_SIZE, 0, SKYBLUE);
 			DrawTextEx(
 				font,
 				tidusVictoriesString,
-				(Vector2){statsRight - tidusVictoriesWidth, statsTop + LINE_HEIGHT * i},
-				fontSize,
+				(Vector2){STATS_RIGHT_FINAL - tidusVictoriesWidth, statsTop + LINE_HEIGHT * i},
+				FONT_SIZE,
 				0,
 				BLACK
 			);
-			DrawTextEx(font, victories.tidus, (Vector2){valueX, statsTop + LINE_HEIGHT * i++}, fontSize, 0, SKYBLUE);
+			DrawTextEx(font, victories.tidus, (Vector2){VALUE_X, statsTop + LINE_HEIGHT * i++}, FONT_SIZE, 0, SKYBLUE);
 			DrawTextEx(
 				font,
 				yunaKillsString,
-				(Vector2){statsRight - yunaKillsWidth, statsTop + LINE_HEIGHT * i},
-				fontSize,
+				(Vector2){STATS_RIGHT_FINAL - yunaKillsWidth, statsTop + LINE_HEIGHT * i},
+				FONT_SIZE,
 				0,
 				BLACK
 			);
-			DrawTextEx(font, kills.yuna, (Vector2){valueX, statsTop + LINE_HEIGHT * i++}, fontSize, 0, GRAY);
+			DrawTextEx(font, kills.yuna, (Vector2){VALUE_X, statsTop + LINE_HEIGHT * i++}, FONT_SIZE, 0, GRAY);
 			DrawTextEx(
 				font,
 				yunaVictoriesString,
-				(Vector2){statsRight - yunaVictoriesWidth, statsTop + LINE_HEIGHT * i},
-				fontSize,
+				(Vector2){STATS_RIGHT_FINAL - yunaVictoriesWidth, statsTop + LINE_HEIGHT * i},
+				FONT_SIZE,
 				0,
 				BLACK
 			);
-			DrawTextEx(font, victories.yuna, (Vector2){valueX, statsTop + LINE_HEIGHT * i++}, fontSize, 0, GRAY);
+			DrawTextEx(font, victories.yuna, (Vector2){VALUE_X, statsTop + LINE_HEIGHT * i++}, FONT_SIZE, 0, GRAY);
 			DrawTextEx(
 				font,
 				auronKillsString,
-				(Vector2){statsRight - auronKillsWidth, statsTop + LINE_HEIGHT * i},
-				fontSize,
+				(Vector2){STATS_RIGHT_FINAL - auronKillsWidth, statsTop + LINE_HEIGHT * i},
+				FONT_SIZE,
 				0,
 				BLACK
 			);
-			DrawTextEx(font, kills.auron, (Vector2){valueX, statsTop + LINE_HEIGHT * i++}, fontSize, 0, RED);
+			DrawTextEx(font, kills.auron, (Vector2){VALUE_X, statsTop + LINE_HEIGHT * i++}, FONT_SIZE, 0, RED);
 			DrawTextEx(
 				font,
 				auronVictoriesString,
-				(Vector2){statsRight - auronVictoriesWidth, statsTop + LINE_HEIGHT * i},
-				fontSize,
+				(Vector2){STATS_RIGHT_FINAL - auronVictoriesWidth, statsTop + LINE_HEIGHT * i},
+				FONT_SIZE,
 				0,
 				BLACK
 			);
-			DrawTextEx(font, victories.auron, (Vector2){valueX, statsTop + LINE_HEIGHT * i++}, fontSize, 0, RED);
+			DrawTextEx(font, victories.auron, (Vector2){VALUE_X, statsTop + LINE_HEIGHT * i++}, FONT_SIZE, 0, RED);
 			DrawTextEx(
 				font,
 				wakkaKillsString,
-				(Vector2){statsRight - wakkaKillsWidth, statsTop + LINE_HEIGHT * i},
-				fontSize,
+				(Vector2){STATS_RIGHT_FINAL - wakkaKillsWidth, statsTop + LINE_HEIGHT * i},
+				FONT_SIZE,
 				0,
 				BLACK
 			);
-			DrawTextEx(font, kills.wakka, (Vector2){valueX, statsTop + LINE_HEIGHT * i++}, fontSize, 0, ORANGE);
+			DrawTextEx(font, kills.wakka, (Vector2){VALUE_X, statsTop + LINE_HEIGHT * i++}, FONT_SIZE, 0, ORANGE);
 			DrawTextEx(
 				font,
 				wakkaVictoriesString,
-				(Vector2){statsRight - wakkaVictoriesWidth, statsTop + LINE_HEIGHT * i},
-				fontSize,
+				(Vector2){STATS_RIGHT_FINAL - wakkaVictoriesWidth, statsTop + LINE_HEIGHT * i},
+				FONT_SIZE,
 				0,
 				BLACK
 			);
-			DrawTextEx(font, victories.wakka, (Vector2){valueX, statsTop + LINE_HEIGHT * i++}, fontSize, 0, ORANGE);
+			DrawTextEx(font, victories.wakka, (Vector2){VALUE_X, statsTop + LINE_HEIGHT * i++}, FONT_SIZE, 0, ORANGE);
 			DrawTextEx(
 				font,
 				luluKillsString,
-				(Vector2){statsRight - luluKillsWidth, statsTop + LINE_HEIGHT * i},
-				fontSize,
+				(Vector2){STATS_RIGHT_FINAL - luluKillsWidth, statsTop + LINE_HEIGHT * i},
+				FONT_SIZE,
 				0,
 				BLACK
 			);
-			DrawTextEx(font, kills.lulu, (Vector2){valueX, statsTop + LINE_HEIGHT * i++}, fontSize, 0, BLACK);
+			DrawTextEx(font, kills.lulu, (Vector2){VALUE_X, statsTop + LINE_HEIGHT * i++}, FONT_SIZE, 0, BLACK);
 			DrawTextEx(
 				font,
 				luluVictoriesString,
-				(Vector2){statsRight - luluVictoriesWidth, statsTop + LINE_HEIGHT * i},
-				fontSize,
+				(Vector2){STATS_RIGHT_FINAL - luluVictoriesWidth, statsTop + LINE_HEIGHT * i},
+				FONT_SIZE,
 				0,
 				BLACK
 			);
-			DrawTextEx(font, victories.lulu, (Vector2){valueX, statsTop + LINE_HEIGHT * i++}, fontSize, 0, BLACK);
+			DrawTextEx(font, victories.lulu, (Vector2){VALUE_X, statsTop + LINE_HEIGHT * i++}, FONT_SIZE, 0, BLACK);
 			DrawTextEx(
 				font,
 				kimahriKillsString,
-				(Vector2){statsRight - kimahriKillsWidth, statsTop + LINE_HEIGHT * i},
-				fontSize,
+				(Vector2){STATS_RIGHT_FINAL - kimahriKillsWidth, statsTop + LINE_HEIGHT * i},
+				FONT_SIZE,
 				0,
 				BLACK
 			);
-			DrawTextEx(font, kills.kimahri, (Vector2){valueX, statsTop + LINE_HEIGHT * i++}, fontSize, 0, BLUE);
+			DrawTextEx(font, kills.kimahri, (Vector2){VALUE_X, statsTop + LINE_HEIGHT * i++}, FONT_SIZE, 0, BLUE);
 			DrawTextEx(
 				font,
 				kimahriVictoriesString,
-				(Vector2){statsRight - kimahriVictoriesWidth, statsTop + LINE_HEIGHT * i},
-				fontSize,
+				(Vector2){STATS_RIGHT_FINAL - kimahriVictoriesWidth, statsTop + LINE_HEIGHT * i},
+				FONT_SIZE,
 				0,
 				BLACK
 			);
-			DrawTextEx(font, victories.kimahri, (Vector2){valueX, statsTop + LINE_HEIGHT * i++}, fontSize, 0, BLUE);
+			DrawTextEx(font, victories.kimahri, (Vector2){VALUE_X, statsTop + LINE_HEIGHT * i++}, FONT_SIZE, 0, BLUE);
 			DrawTextEx(
 				font,
 				rikkuKillsString,
-				(Vector2){statsRight - rikkuKillsWidth, statsTop + LINE_HEIGHT * i},
-				fontSize,
+				(Vector2){STATS_RIGHT_FINAL - rikkuKillsWidth, statsTop + LINE_HEIGHT * i},
+				FONT_SIZE,
 				0,
 				BLACK
 			);
-			DrawTextEx(font, kills.rikku, (Vector2){valueX, statsTop + LINE_HEIGHT * i++}, fontSize, 0, GREEN);
+			DrawTextEx(font, kills.rikku, (Vector2){VALUE_X, statsTop + LINE_HEIGHT * i++}, FONT_SIZE, 0, GREEN);
 			DrawTextEx(
 				font,
 				rikkuVictoriesString,
-				(Vector2){statsRight - rikkuVictoriesWidth, statsTop + LINE_HEIGHT * i},
-				fontSize,
+				(Vector2){STATS_RIGHT_FINAL - rikkuVictoriesWidth, statsTop + LINE_HEIGHT * i},
+				FONT_SIZE,
 				0,
 				BLACK
 			);
-			DrawTextEx(font, victories.rikku, (Vector2){valueX, statsTop + LINE_HEIGHT * i++}, fontSize, 0, GREEN);
+			DrawTextEx(font, victories.rikku, (Vector2){VALUE_X, statsTop + LINE_HEIGHT * i++}, FONT_SIZE, 0, GREEN);
 		}
 
 		// Draw hack texts
 		uint8_t y = 1;
-		DrawTextEx(font, perfectStealString, (Vector2){PADDING, (float)y++ * LINE_HEIGHT}, fontSize, 0, perfectStealColour);
-		DrawTextEx(font, rareStealString, (Vector2){PADDING, (float)y++ * LINE_HEIGHT}, fontSize, 0, rareStealColour);
-		DrawTextEx(font, addedStealString, (Vector2){PADDING, (float)y++ * LINE_HEIGHT}, fontSize, 0, addedStealColour);
-		DrawTextEx(font, rareDropString, (Vector2){PADDING, (float)y++ * LINE_HEIGHT}, fontSize, 0, moreRareDropsColour);
+		DrawTextEx(
+			font,
+			perfectStealString,
+			(Vector2){PADDING, (float)y++ * LINE_HEIGHT},
+			FONT_SIZE,
+			0,
+			perfectStealColour
+		);
+		DrawTextEx(font, rareStealString, (Vector2){PADDING, (float)y++ * LINE_HEIGHT}, FONT_SIZE, 0, rareStealColour);
+		DrawTextEx(font, addedStealString, (Vector2){PADDING, (float)y++ * LINE_HEIGHT}, FONT_SIZE, 0, addedStealColour);
+		DrawTextEx(font, rareDropString, (Vector2){PADDING, (float)y++ * LINE_HEIGHT}, FONT_SIZE, 0, moreRareDropsColour);
 		DrawTextEx(
 			font,
 			alwaysDropEquipmentString,
 			(Vector2){PADDING, (float)y++ * LINE_HEIGHT},
-			fontSize,
+			FONT_SIZE,
 			0,
 			guaranteedEquipmentColour
 		);
@@ -530,7 +529,7 @@ int main() {
 			font,
 			perfectSwordplayString,
 			(Vector2){PADDING, (float)y++ * LINE_HEIGHT},
-			fontSize,
+			FONT_SIZE,
 			0,
 			perfectSwordplayColour
 		);
@@ -538,14 +537,14 @@ int main() {
 			font,
 			perfectBushidoString,
 			(Vector2){PADDING, (float)y++ * LINE_HEIGHT},
-			fontSize,
+			FONT_SIZE,
 			0,
 			perfectBushidoColour
 		);
-		DrawTextEx(font, perfectFuryString, (Vector2){PADDING, (float)y++ * LINE_HEIGHT}, fontSize, 0, perfectFuryColour);
+		DrawTextEx(font, perfectFuryString, (Vector2){PADDING, (float)y++ * LINE_HEIGHT}, FONT_SIZE, 0, perfectFuryColour);
 
 		if (rareStealSuccessValue != RARE_STEAL_CHANCE_ORIGINAL_2) {
-			DrawTextEx(font, "(", (Vector2){PADDING + rareStealTextWidth + 6, 50}, fontSize, 0, BLACK);
+			DrawTextEx(font, "(", (Vector2){PADDING + rareStealTextWidth + 6, 50}, FONT_SIZE, 0, BLACK);
 			DrawTextEx(
 				font,
 				")",
@@ -553,7 +552,7 @@ int main() {
 					PADDING + rareStealTextWidth + fiftyPercentWidth + hundredPercentWidth + zeroPercentWidth + 22,
 					50
 				},
-				fontSize,
+				FONT_SIZE,
 				0,
 				BLACK
 			);
@@ -561,7 +560,7 @@ int main() {
 				font,
 				"50%",
 				(Vector2){PADDING + rareStealTextWidth + 12, 50},
-				fontSize,
+				FONT_SIZE,
 				0,
 				rareStealSuccessValue == RARE_STEAL_CHANCE_NEW_2_50_50 ? GREEN : BLACK
 			);
@@ -569,7 +568,7 @@ int main() {
 				font,
 				"100%",
 				(Vector2){PADDING + rareStealTextWidth + fiftyPercentWidth + 16, 50},
-				fontSize,
+				FONT_SIZE,
 				0,
 				rareStealSuccessValue == NO_OP ? GREEN : BLACK
 			);
@@ -577,14 +576,14 @@ int main() {
 				font,
 				"0%",
 				(Vector2){PADDING + rareStealTextWidth + fiftyPercentWidth + hundredPercentWidth + 22, 50},
-				fontSize,
+				FONT_SIZE,
 				0,
 				rareStealSuccessValue == RARE_STEAL_CHANCE_NEW_2_NEVER ? GREEN : BLACK
 			);
 		}
 
 		if (moreRareDropsValue != MORE_RARE_DROPS_ORIGINAL) {
-			DrawTextEx(font, "(", (Vector2){PADDING + rareDropTextWidth + 6, 102}, fontSize, 0, BLACK);
+			DrawTextEx(font, "(", (Vector2){PADDING + rareDropTextWidth + 6, 102}, FONT_SIZE, 0, BLACK);
 			DrawTextEx(
 				font,
 				")",
@@ -592,7 +591,7 @@ int main() {
 					PADDING + rareDropTextWidth + fiftyPercentWidth + hundredPercentWidth + zeroPercentWidth + 22,
 					102 // TODO: derive this the same way we get the position of the cheat label
 				},
-				fontSize,
+				FONT_SIZE,
 				0,
 				BLACK
 			);
@@ -600,7 +599,7 @@ int main() {
 				font,
 				"50%",
 				(Vector2){PADDING + rareDropTextWidth + 12, 102},
-				fontSize,
+				FONT_SIZE,
 				0,
 				moreRareDropsValue == MORE_RARE_DROPS_NEW_50_50 ? GREEN : BLACK
 			);
@@ -608,7 +607,7 @@ int main() {
 				font,
 				"100%",
 				(Vector2){PADDING + rareDropTextWidth + fiftyPercentWidth + 16, 102},
-				fontSize,
+				FONT_SIZE,
 				0,
 				moreRareDropsValue == MORE_RARE_DROPS_NEW_ALWAYS ? GREEN : BLACK
 			);
@@ -616,13 +615,13 @@ int main() {
 				font,
 				"0%",
 				(Vector2){PADDING + rareDropTextWidth + fiftyPercentWidth + hundredPercentWidth + 22, 102},
-				fontSize,
+				FONT_SIZE,
 				0,
 				moreRareDropsValue == MORE_RARE_DROPS_NEW_NEVER ? GREEN : BLACK
 			);
 		}
 
-		DrawTextEx(font, version, (Vector2){PADDING, (float)SCREEN_HEIGHT - versionHeight - PADDING}, fontSize, 0, BLACK);
+		DrawTextEx(font, version, (Vector2){PADDING, (float)SCREEN_HEIGHT - versionHeight - PADDING}, FONT_SIZE, 0, BLACK);
 
 		window_afterDraw();
 
