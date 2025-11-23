@@ -1,7 +1,6 @@
 // SPDX-FileCopyrightText: © 2025 Phil Armstead <philarmstead@mailbox.org>
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-
 #include <stdint.h>
 #include <stdio.h>
 
@@ -27,23 +26,23 @@ typedef struct {
 } CharacterString;
 
 int main() {
-#ifdef IS_RELEASE
+	#ifdef IS_RELEASE
 	SetTraceLogLevel(LOG_NONE);
-#endif
+	#endif
 
-#ifdef _WIN32
+	#ifdef _WIN32
 	int pid = 0;
 	HANDLE fd = getProcessFileDescriptor(&pid);
-#else
+	#else
 	int64_t fd = getProcessFileDescriptor();
-#endif
+	#endif
 
-	const uint16_t SCREEN_WIDTH = 640;
-	const uint16_t SCREEN_HEIGHT = 420;
-	const uint8_t FPS = 30;
-	window_create(SCREEN_WIDTH, SCREEN_HEIGHT, FPS, "FFX Trainer");
+	#define SCREEN_WIDTH 640
+	#define SCREEN_HEIGHT 420
+	#define FPS 30
+
 	const Image icon = LoadImageFromMemory(".png", icon_png, icon_png_len);
-	SetWindowIcon(icon);
+	window_create(SCREEN_WIDTH, SCREEN_HEIGHT, FPS, "FFX Trainer", icon);
 
 	uint16_t framesSinceDataUpdate = 300;
 	char battleCountString[8] = {0};
@@ -70,19 +69,19 @@ int main() {
 	Color perfectBushidoColour = BLACK;
 	Color perfectSwordplayColour = BLACK;
 
-#ifdef _WIN32
+	#ifdef _WIN32
 	bool isGameRunning = fd != NULL;
-#else
+	#else
 	bool isGameRunning = fd != -1;
-#endif
+	#endif
 
 	uintptr_t base = 0;
 
-#ifdef _WIN32
+	#ifdef _WIN32
 	if (isGameRunning) {
 		base = getModuleBaseAddress(pid, "FFX.exe");
 	}
-#endif
+	#endif
 
 	const uint16_t loadButtonWidth = 175;
 	const Rectangle16 loadButtonRectangle = {
@@ -243,16 +242,16 @@ int main() {
 				mouseX < loadButtonRectangle.x + loadButtonRectangle.width &&
 				mouseY > loadButtonRectangle.y &&
 				mouseY < loadButtonRectangle.y + loadButtonRectangle.height) {
-#ifdef _WIN32
+				#ifdef _WIN32
 				fd = getProcessFileDescriptor(&pid);
 				isGameRunning = fd != NULL;
 				if (isGameRunning) {
 					base = getModuleBaseAddress(pid, "FFX.exe");
 				}
-#else
+				#else
 				fd = getProcessFileDescriptor();
 				isGameRunning = fd != -1;
-#endif
+				#endif
 			}
 		}
 

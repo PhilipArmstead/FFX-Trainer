@@ -1,26 +1,14 @@
 // SPDX-FileCopyrightText: © 2025 Phil Armstead <philarmstead@mailbox.org>
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-
 #pragma once
 
 #include <raylib.h>
 
+#include "types.h"
 
-static inline void window_create(const uint32_t width, const uint32_t height, const uint16_t fps, const char *title) {
-  InitWindow(width, height, title);
-  SetTargetFPS(fps);
-}
 
-static inline void window_destroy() {
-  CloseWindow();
-}
-
-static inline void window_beforeDraw() {
-  BeginDrawing();
-  ClearBackground(RAYWHITE);
-}
-
-static inline void window_afterDraw() {
-  EndDrawing();
-}
+void window_create(uint32_t width, uint32_t height, uint16_t fps, const char *title, Image appIcon);
+void window_destroy(void);
+void window_beforeDraw(void);
+void window_afterDraw(void);
