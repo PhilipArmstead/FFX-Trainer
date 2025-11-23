@@ -1,12 +1,11 @@
 // SPDX-FileCopyrightText: © 2025 Phil Armstead <philarmstead@mailbox.org>
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-
 #pragma once
 
 #define VERSION_MAJOR 0
 #define VERSION_MINOR 10
-#define VERSION_PATCH 2
+#define VERSION_PATCH 3
 
 #define LINE_HEIGHT 26
 #define PADDING 24
