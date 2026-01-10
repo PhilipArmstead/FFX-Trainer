@@ -5,7 +5,7 @@
 
 #define VERSION_MAJOR 0
 #define VERSION_MINOR 10
-#define VERSION_PATCH 5
+#define VERSION_PATCH 6
 
 #define LINE_HEIGHT 26
 #define PADDING 24

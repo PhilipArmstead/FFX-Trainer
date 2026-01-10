@@ -49,7 +49,7 @@ all: $(RAYLIB_LIB)
 	$(CC) $(CCFLAGS) $(SRCS) -o $(BUILD_DIR)/$(TARGET_EXEC) $(LDFLAGS)
 	@cp -r assets $(BUILD_DIR)
 
-release: CCFLAGS += -O3
+release: CCFLAGS += -O3 -DIS_RELEASE
 release: all
 
 release-with-debug: CCFLAGS += -DDEBUG -g -fsanitize=address,undefined -O3
