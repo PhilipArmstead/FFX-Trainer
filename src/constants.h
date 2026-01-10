@@ -4,8 +4,8 @@
 #pragma once
 
 #define VERSION_MAJOR 0
-#define VERSION_MINOR 10
-#define VERSION_PATCH 6
+#define VERSION_MINOR 11
+#define VERSION_PATCH 0
 
 #define LINE_HEIGHT 26
 #define PADDING 24
@@ -16,9 +16,10 @@ const char *rareStealString = "2) Toggle rare steal chance";
 const char *addedStealString = "3) Toggle added steal";
 const char *rareDropString = "4) Toggle rare drop chance";
 const char *alwaysDropEquipmentString = "5) Toggle always drop equipment";
-const char *perfectSwordplayString = "6) Toggle perfect Swordplay";
-const char *perfectBushidoString = "7) Toggle perfect Bushido";
-const char *perfectFuryString = "8) Toggle perfect Fury";
+const char *breakItemLimitString = "6) Break item limit";
+const char *perfectSwordplayString = "7) Toggle perfect Swordplay";
+const char *perfectBushidoString = "8) Toggle perfect Bushido";
+const char *perfectFuryString = "9) Toggle perfect Fury";
 
 const char *battlesString = "Battles:";
 const char *tidusKillsString = "Tidus kills:";
@@ -42,6 +43,7 @@ const char *rikkuVictoriesString = "Rikku victories:";
 #define GUARANTEED_STEAL_TOGGLED (1 << 3)
 #define ADDED_STEAL_TOGGLED (1 << 4)
 #define GUARANTEED_EQUIPMENT_DROP_TOGGLED (1 << 5)
+#define BREAK_ITEM_LIMIT_TOGGLED (1 << 6)
 
 #ifdef _WIN32
 #define LONG_SPECIFIER "%llu"

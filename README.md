@@ -21,6 +21,8 @@ This tool allows for the following cheats:
 	- 100% (for always rare drops)
 	- 50%
 - Always drop equipment
+- Break item limit (255 instead of 99). Quantities will reset to 99 if the hack is disabled and an overflowing item is
+  collected.
 - Auto-succeed Swordplay Overdrive
 - Auto-succeed Bushido Overdrive
 - Skip Fury Overdrive with a count of 12

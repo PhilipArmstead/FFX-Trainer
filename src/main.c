@@ -45,6 +45,7 @@ int main() {
 	window_create(SCREEN_WIDTH, SCREEN_HEIGHT, FPS, "FFX Trainer", icon);
 
 	uint16_t framesSinceDataUpdate = 300;
+	#define RESET_RENDER_TIMER() (framesSinceDataUpdate = FPS * 5)
 	char battleCountString[8] = {0};
 	CharacterString kills = {0};
 	CharacterString victories = {0};
@@ -68,6 +69,7 @@ int main() {
 	Color perfectFuryColour = BLACK;
 	Color perfectBushidoColour = BLACK;
 	Color perfectSwordplayColour = BLACK;
+	Color breakItemLimitColour = BLACK;
 
 	#ifdef _WIN32
 	bool isGameRunning = fd != NULL;
@@ -162,7 +164,7 @@ int main() {
 						bytes[2] = RARE_STEAL_CHANCE_ORIGINAL_2;
 					}
 					writeToMemory(fd, base, RARE_STEAL_CHANCE_LOCATION, 3, bytes);
-					framesSinceDataUpdate = FPS * 5;
+					RESET_RENDER_TIMER();
 					break;
 				}
 				case '3': {
@@ -173,7 +175,7 @@ int main() {
 						}
 						: (uint8_t[2]){NO_OP, NO_OP};
 					writeToMemory(fd, base, ADDED_STEAL_LOCATION, 2, bytes);
-					framesSinceDataUpdate = FPS * 5;
+					RESET_RENDER_TIMER();
 					break;
 				}
 				case '4': {
@@ -188,7 +190,7 @@ int main() {
 						bytes[0] = MORE_RARE_DROPS_ORIGINAL;
 					}
 					writeToMemory(fd, base, MORE_RARE_DROPS_LOCATION, 1, bytes);
-					framesSinceDataUpdate = FPS * 5;
+					RESET_RENDER_TIMER();
 					break;
 				}
 				case '5': {
@@ -196,26 +198,39 @@ int main() {
 						? (uint8_t[1]){ALWAYS_DROP_EQUIPMENT_ORIGINAL}
 						: (uint8_t[1]){ALWAYS_DROP_EQUIPMENT_NEW};
 					writeToMemory(fd, base, ALWAYS_DROP_EQUIPMENT_LOCATION, 1, bytes);
-					framesSinceDataUpdate = FPS * 5;
+					RESET_RENDER_TIMER();
 					break;
 				}
 				case '6': {
+					uint8_t *byte = mask & BREAK_ITEM_LIMIT_TOGGLED
+						? (uint8_t[1]){BREAK_ITEM_LIMIT_ORIGINAL}
+						: (uint8_t[1]){BREAK_ITEM_LIMIT_NEW};
+					writeToMemory(fd, base, BREAK_ITEM_LIMIT_LOCATION_1, 1, byte);
+					writeToMemory(fd, base, BREAK_ITEM_LIMIT_LOCATION_2, 1, byte);
+					byte = mask & BREAK_ITEM_LIMIT_TOGGLED
+						? (uint8_t[1]){BREAK_ITEM_LIMIT_ORIGINAL_JMP}
+						: (uint8_t[1]){BREAK_ITEM_LIMIT_NEW_JMP};
+					writeToMemory(fd, base, BREAK_ITEM_LIMIT_LOCATION_2, 1, byte);
+					RESET_RENDER_TIMER();
+					break;
+				}
+				case '7': {
 					uint8_t *bytes = mask & PERFECT_TIDUS_OD_TOGGLED
 						? (uint8_t[6]){TIDUS_PERFECT_LIMIT_ORIGINAL}
 						: (uint8_t[6]){TIDUS_PERFECT_LIMIT_NEW};
 					writeToMemory(fd, base, TIDUS_PERFECT_LIMIT_LOCATION, 6, bytes);
-					framesSinceDataUpdate = FPS * 5;
+					RESET_RENDER_TIMER();
 					break;
 				}
-				case '7': {
+				case '8': {
 					uint8_t *bytes = mask & PERFECT_AURON_OD_TOGGLED
 						? (uint8_t[7]){AURON_PERFECT_LIMIT_ORIGINAL}
 						: (uint8_t[7]){AURON_PERFECT_LIMIT_NEW};
 					writeToMemory(fd, base, AURON_PERFECT_LIMIT_LOCATION, 7, bytes);
-					framesSinceDataUpdate = FPS * 5;
+					RESET_RENDER_TIMER();
 					break;
 				}
-				case '8': {
+				case '9': {
 					uint8_t *bytes = mask & PERFECT_LULU_OD_TOGGLED
 						// TODO: put byte length in constant
 						? (uint8_t[6]){LULU_PERFECT_LIMIT_ORIGINAL_1}
@@ -225,7 +240,7 @@ int main() {
 						? (uint8_t[7]){LULU_PERFECT_LIMIT_ORIGINAL_2}
 						: (uint8_t[7]){LULU_PERFECT_LIMIT_NEW_2};
 					writeToMemory(fd, base, LULU_PERFECT_LIMIT_LOCATION_2, 7, bytes);
-					framesSinceDataUpdate = FPS * 5;
+					RESET_RENDER_TIMER();
 					break;
 				}
 				default:
@@ -331,12 +346,21 @@ int main() {
 				}
 				readFromMemory(fd, base, MORE_RARE_DROPS_LOCATION, 1, buffer);
 				moreRareDropsValue = buffer[0];
+
+				readFromMemory(fd, base, BREAK_ITEM_LIMIT_LOCATION_1, 1, buffer);
+				if (buffer[0] != BREAK_ITEM_LIMIT_ORIGINAL) {
+					mask |= BREAK_ITEM_LIMIT_TOGGLED;
+				} else {
+					mask &= ~BREAK_ITEM_LIMIT_TOGGLED;
+				}
+
 				readFromMemory(fd, base, TIDUS_PERFECT_LIMIT_LOCATION + 5, 1, buffer);
 				if (buffer[0] == NO_OP) {
 					mask |= PERFECT_TIDUS_OD_TOGGLED;
 				} else {
 					mask &= ~PERFECT_TIDUS_OD_TOGGLED;
 				}
+
 				readFromMemory(fd, base, LULU_PERFECT_LIMIT_LOCATION_2 + 5, 1, buffer);
 				if (buffer[0] == NO_OP) {
 					mask |= PERFECT_LULU_OD_TOGGLED;
@@ -364,6 +388,7 @@ int main() {
 				perfectFuryColour = mask & PERFECT_LULU_OD_TOGGLED ? GREEN : BLACK;
 				perfectBushidoColour = mask & PERFECT_AURON_OD_TOGGLED ? GREEN : BLACK;
 				perfectSwordplayColour = mask & PERFECT_TIDUS_OD_TOGGLED ? GREEN : BLACK;
+				breakItemLimitColour = mask & BREAK_ITEM_LIMIT_TOGGLED ? GREEN : BLACK;
 
 				framesSinceDataUpdate = 0;
 			}
@@ -430,6 +455,7 @@ int main() {
 		drawHackLabel(addedStealString, addedStealColour);
 		drawHackLabel(rareDropString, moreRareDropsColour);
 		drawHackLabel(alwaysDropEquipmentString, guaranteedEquipmentColour);
+		drawHackLabel(breakItemLimitString, breakItemLimitColour);
 		drawHackLabel(perfectSwordplayString, perfectSwordplayColour);
 		drawHackLabel(perfectBushidoString, perfectBushidoColour);
 		drawHackLabel(perfectFuryString, perfectFuryColour);
