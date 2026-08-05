@@ -4,7 +4,7 @@
 #include "process.h"
 
 
-#ifdef _WIN32
+#ifdef ARCH_WIN
 #define INVALID_HANDLE_VALUE ((HANDLE) (LONG_PTR)-1)
 
 WINBASEAPI WINBOOL WINAPI CloseHandle(HANDLE hObject);
@@ -32,7 +32,7 @@ int findProcessByName(const char *processName) {
 	return pid;
 }
 
-HANDLE getProcessFileDescriptor(int *pid) {
+HANDLE getProcessFileDescriptor(uint32_t *pid) {
 	*pid = findProcessByName("FFX.exe");
 	return OpenProcess(PROCESS_ALL_ACCESS, TRUE, *pid);
 }

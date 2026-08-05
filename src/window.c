@@ -3,28 +3,16 @@
 
 #include "window.h"
 
+#include <gtk/gtk.h>
 
-void window_create(
-  const uint32_t width,
-  const uint32_t height,
-  const uint16_t fps,
-  const char *title,
-  const Image appIcon
-) {
-  InitWindow(width, height, title);
-  SetTargetFPS(fps);
-  SetWindowIcon(appIcon);
-}
 
-void window_destroy(void) {
-  CloseWindow();
-}
+WindowContext window_create(const char *layoutName, const char *windowName) {
+	char pathToAppLayout[256] = {0};
+	snprintf(pathToAppLayout, sizeof(pathToAppLayout), "%s/%s.ui", LAYOUTS_DIR, layoutName);
 
-void window_beforeDraw(void) {
-  BeginDrawing();
-  ClearBackground(RAYWHITE);
-}
-
-void window_afterDraw(void) {
-  EndDrawing();
+	WindowContext context = {};
+	context.builder = gtk_builder_new_from_file(pathToAppLayout);
+	context.window = GTK_WIDGET(gtk_builder_get_object(context.builder, windowName));
+	gtk_window_present(GTK_WINDOW(context.window));
+	return context;
 }

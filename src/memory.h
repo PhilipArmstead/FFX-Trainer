@@ -3,7 +3,8 @@
 
 #pragma once
 
-#ifdef _WIN32
+#ifdef ARCH_WIN
+#include <stdint.h>
 #include <memoryapi.h>
 #include <minwindef.h>
 #include <tlhelp32.h>

@@ -1,0 +1,546 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<interface>
+	<requires lib="gtk" version="4.0"/>
+
+	<object class="GtkApplicationWindow" id="window:app">
+		<property name="title">FFX Trainer</property>
+		<property name="default-width">580</property>
+		<property name="default-height">453</property>
+		<property name="resizable">false</property>
+		<property name="child">
+			<object class="GtkBox" id="root_box">
+				<property name="orientation">vertical</property>
+				<property name="margin-start">24</property>
+				<property name="margin-end">24</property>
+				<property name="margin-top">24</property>
+				<property name="margin-bottom">24</property>
+				<style>
+					<class name="trainer-root"/>
+				</style>
+				<child>
+					<object class="GtkBox" id="content_box">
+						<property name="hexpand">true</property>
+						<property name="vexpand">true</property>
+						<property name="orientation">horizontal</property>
+						<child>
+							<object class="GtkBox" id="options_box">
+								<property name="hexpand">true</property>
+								<property name="vexpand">true</property>
+								<property name="orientation">vertical</property>
+								<property name="spacing">4</property>
+								<style>
+									<class name="options-list"/>
+								</style>
+								<child>
+									<object class="GtkButton" id="button:toggle:perfect-steal">
+										<property name="label">1) Toggle 100% steal chance</property>
+										<property name="halign">start</property>
+										<signal name="clicked" handler="callbackToggle100StealChance"/>
+										<style>
+											<class name="link--label"/>
+										</style>
+									</object>
+								</child>
+								<child>
+									<object class="GtkBox">
+										<property name="orientation">horizontal</property>
+										<child>
+											<object class="GtkButton" id="button:toggle:rare-steal-chance">
+												<property name="label">2) Toggle rare steal chance</property>
+												<property name="margin-end">4</property>
+												<property name="halign">start</property>
+												<signal name="clicked" handler="callbackToggleRareStealChance"/>
+												<style>
+													<class name="link--label"/>
+												</style>
+											</object>
+										</child>
+										<child>
+											<object class="GtkBox" id="box:rare-steal-chance">
+												<child>
+													<object class="GtkLabel">
+														<property name="label">(</property>
+													</object>
+												</child>
+												<child>
+													<object class="GtkButton" id="label:rare-steal-chance:50">
+														<property name="label">50%</property>
+														<style>
+															<class name="link--label"/>
+														</style>
+														<signal name="clicked" handler="callbackSetRareStealChance50"/>
+													</object>
+												</child>
+												<child>
+													<object class="GtkButton" id="label:rare-steal-chance:100">
+														<property name="margin-start">4</property>
+														<property name="margin-end">4</property>
+														<property name="label">100%</property>
+														<style>
+															<class name="link--label"/>
+														</style>
+														<signal name="clicked" handler="callbackSetRareStealChance100"/>
+													</object>
+												</child>
+												<child>
+													<object class="GtkButton" id="label:rare-steal-chance:0">
+														<property name="label">0%</property>
+														<style>
+															<class name="link--label"/>
+														</style>
+														<signal name="clicked" handler="callbackSetRareStealChance0"/>
+													</object>
+												</child>
+												<child>
+													<object class="GtkLabel">
+														<property name="label">)</property>
+													</object>
+												</child>
+											</object>
+										</child>
+									</object>
+								</child>
+								<child>
+									<object class="GtkButton" id="button:toggle:added-steal">
+										<property name="label">3) Toggle added steal</property>
+										<property name="halign">start</property>
+										<style>
+											<class name="link--label"/>
+										</style>
+										<signal name="clicked" handler="callbackToggleAddedSteal"/>
+									</object>
+								</child>
+								<child>
+									<object class="GtkBox">
+										<property name="orientation">horizontal</property>
+										<child>
+											<object class="GtkButton" id="button:toggle:rare-drop-chance">
+												<property name="label">4) Toggle rare drop chance</property>
+												<property name="margin-end">4</property>
+												<property name="halign">start</property>
+												<signal name="clicked" handler="callbackToggleRareDropChance"/>
+												<style>
+													<class name="link--label"/>
+												</style>
+											</object>
+										</child>
+										<child>
+											<object class="GtkBox" id="box:rare-drop-chance">
+												<child>
+													<object class="GtkLabel">
+														<property name="label">(</property>
+													</object>
+												</child>
+												<child>
+													<object class="GtkButton" id="label:rare-drop-chance:50">
+														<property name="label">50%</property>
+														<style>
+															<class name="link--label"/>
+														</style>
+														<signal name="clicked" handler="callbackSetRareDropChance50"/>
+													</object>
+												</child>
+												<child>
+													<object class="GtkButton" id="label:rare-drop-chance:100">
+														<property name="margin-start">4</property>
+														<property name="margin-end">4</property>
+														<property name="label">100%</property>
+														<style>
+															<class name="link--label"/>
+														</style>
+														<signal name="clicked" handler="callbackSetRareDropChance100"/>
+													</object>
+												</child>
+												<child>
+													<object class="GtkButton" id="label:rare-drop-chance:0">
+														<property name="label">0%</property>
+														<style>
+															<class name="link--label"/>
+														</style>
+														<signal name="clicked" handler="callbackSetRareDropChance0"/>
+													</object>
+												</child>
+												<child>
+													<object class="GtkLabel">
+														<property name="label">)</property>
+													</object>
+												</child>
+											</object>
+										</child>
+									</object>
+								</child>
+								<child>
+									<object class="GtkButton" id="button:toggle:guarantee-equipment-drops">
+										<property name="label">5) Toggle always drop equipment</property>
+										<property name="halign">start</property>
+										<style>
+											<class name="link--label"/>
+										</style>
+										<signal name="clicked" handler="callbackToggleGuaranteeEquipmentDrop"/>
+									</object>
+								</child>
+								<child>
+									<object class="GtkButton" id="button:toggle:perfect-swordplay">
+										<property name="label">6) Toggle perfect Swordplay</property>
+										<property name="halign">start</property>
+										<style>
+											<class name="link--label"/>
+										</style>
+										<signal name="clicked" handler="callbackTogglePerfectSwordplay"/>
+									</object>
+								</child>
+								<child>
+									<object class="GtkButton" id="button:toggle:perfect-bushido">
+										<property name="label">7) Toggle perfect Bushido</property>
+										<property name="halign">start</property>
+										<style>
+											<class name="link--label"/>
+										</style>
+										<signal name="clicked" handler="callbackTogglePerfectBushido"/>
+									</object>
+								</child>
+								<child>
+									<object class="GtkButton" id="button:toggle:perfect-fury">
+										<property name="label">8) Toggle perfect Fury</property>
+										<property name="halign">start</property>
+										<style>
+											<class name="link--label"/>
+										</style>
+										<signal name="clicked" handler="callbackTogglePerfectFury"/>
+									</object>
+								</child>
+								<child>
+									<object class="GtkLabel" id="label:version">
+										<property name="label"/>
+										<property name="halign">start</property>
+										<property name="valign">end</property>
+										<property name="vexpand">true</property>
+										<style>
+											<class name="version-label"/>
+										</style>
+									</object>
+								</child>
+							</object>
+						</child>
+						<child>
+							<object class="GtkBox" id="stats_box">
+								<property name="valign">start</property>
+								<property name="orientation">vertical</property>
+								<property name="spacing">4</property>
+								<style>
+									<class name="stats-list"/>
+								</style>
+								<child>
+									<object class="GtkBox">
+										<property name="orientation">horizontal</property>
+										<property name="halign">end</property>
+										<property name="spacing">6</property>
+										<child>
+											<object class="GtkLabel" id="battles_name_label">
+												<property name="label">Battles:</property>
+											</object>
+										</child>
+										<child>
+											<object class="GtkLabel" id="label:battles">
+												<property name="label"/>
+											</object>
+										</child>
+									</object>
+								</child>
+								<child>
+									<object class="GtkBox">
+										<property name="orientation">horizontal</property>
+										<property name="halign">end</property>
+										<property name="spacing">6</property>
+										<child>
+											<object class="GtkLabel">
+												<property name="label">Tidus kills:</property>
+											</object>
+										</child>
+										<child>
+											<object class="GtkLabel" id="label:kills:tidus">
+												<property name="label"/>
+												<style>
+													<class name="blue-value"/>
+												</style>
+											</object>
+										</child>
+									</object>
+								</child>
+								<child>
+									<object class="GtkBox">
+										<property name="orientation">horizontal</property>
+										<property name="halign">end</property>
+										<property name="spacing">6</property>
+										<child>
+											<object class="GtkLabel">
+												<property name="label">Tidus victories:</property>
+											</object>
+										</child>
+										<child>
+											<object class="GtkLabel" id="label:victories:tidus">
+												<property name="label"/>
+												<style>
+													<class name="blue-value"/>
+												</style>
+											</object>
+										</child>
+									</object>
+								</child>
+								<child>
+									<object class="GtkBox">
+										<property name="orientation">horizontal</property>
+										<property name="halign">end</property>
+										<property name="spacing">6</property>
+										<child>
+											<object class="GtkLabel">
+												<property name="label">Yuna kills:</property>
+											</object>
+										</child>
+										<child>
+											<object class="GtkLabel" id="label:kills:yuna">
+												<property name="label"/>
+												<style>
+													<class name="gray-value"/>
+												</style>
+											</object>
+										</child>
+									</object>
+								</child>
+								<child>
+									<object class="GtkBox">
+										<property name="orientation">horizontal</property>
+										<property name="halign">end</property>
+										<property name="spacing">6</property>
+										<child>
+											<object class="GtkLabel">
+												<property name="label">Yuna victories:</property>
+											</object>
+										</child>
+										<child>
+											<object class="GtkLabel" id="label:victories:yuna">
+												<property name="label"/>
+												<style>
+													<class name="gray-value"/>
+												</style>
+											</object>
+										</child>
+									</object>
+								</child>
+								<child>
+									<object class="GtkBox">
+										<property name="orientation">horizontal</property>
+										<property name="halign">end</property>
+										<property name="spacing">6</property>
+										<child>
+											<object class="GtkLabel">
+												<property name="label">Auron kills:</property>
+											</object>
+										</child>
+										<child>
+											<object class="GtkLabel" id="label:kills:auron">
+												<property name="label"/>
+												<style>
+													<class name="red-value"/>
+												</style>
+											</object>
+										</child>
+									</object>
+								</child>
+								<child>
+									<object class="GtkBox">
+										<property name="orientation">horizontal</property>
+										<property name="halign">end</property>
+										<property name="spacing">6</property>
+										<child>
+											<object class="GtkLabel">
+												<property name="label">Auron victories:</property>
+											</object>
+										</child>
+										<child>
+											<object class="GtkLabel" id="label:victories:auron">
+												<property name="label"/>
+												<style>
+													<class name="red-value"/>
+												</style>
+											</object>
+										</child>
+									</object>
+								</child>
+								<child>
+									<object class="GtkBox">
+										<property name="orientation">horizontal</property>
+										<property name="halign">end</property>
+										<property name="spacing">6</property>
+										<child>
+											<object class="GtkLabel">
+												<property name="label">Wakka kills:</property>
+											</object>
+										</child>
+										<child>
+											<object class="GtkLabel" id="label:kills:wakka">
+												<property name="label"/>
+												<style>
+													<class name="orange-value"/>
+												</style>
+											</object>
+										</child>
+									</object>
+								</child>
+								<child>
+									<object class="GtkBox">
+										<property name="orientation">horizontal</property>
+										<property name="halign">end</property>
+										<property name="spacing">6</property>
+										<child>
+											<object class="GtkLabel">
+												<property name="label">Wakka victories:</property>
+											</object>
+										</child>
+										<child>
+											<object class="GtkLabel" id="label:victories:wakka">
+												<property name="label"/>
+												<style>
+													<class name="orange-value"/>
+												</style>
+											</object>
+										</child>
+									</object>
+								</child>
+								<child>
+									<object class="GtkBox">
+										<property name="orientation">horizontal</property>
+										<property name="halign">end</property>
+										<property name="spacing">6</property>
+										<child>
+											<object class="GtkLabel">
+												<property name="label">Lulu kills:</property>
+											</object>
+										</child>
+										<child>
+											<object class="GtkLabel" id="label:kills:lulu">
+												<property name="label"/>
+												<style>
+													<class name="gray-value"/>
+												</style>
+											</object>
+										</child>
+									</object>
+								</child>
+								<child>
+									<object class="GtkBox">
+										<property name="orientation">horizontal</property>
+										<property name="halign">end</property>
+										<property name="spacing">6</property>
+										<child>
+											<object class="GtkLabel">
+												<property name="label">Lulu victories:</property>
+											</object>
+										</child>
+										<child>
+											<object class="GtkLabel" id="label:victories:lulu">
+												<property name="label"/>
+												<style>
+													<class name="gray-value"/>
+												</style>
+											</object>
+										</child>
+									</object>
+								</child>
+								<child>
+									<object class="GtkBox">
+										<property name="orientation">horizontal</property>
+										<property name="halign">end</property>
+										<property name="spacing">6</property>
+										<child>
+											<object class="GtkLabel">
+												<property name="label">Kimahri kills:</property>
+											</object>
+										</child>
+										<child>
+											<object class="GtkLabel" id="label:kills:kimahri">
+												<property name="label"/>
+												<style>
+													<class name="blue-value"/>
+												</style>
+											</object>
+										</child>
+									</object>
+								</child>
+								<child>
+									<object class="GtkBox">
+										<property name="orientation">horizontal</property>
+										<property name="halign">end</property>
+										<property name="spacing">6</property>
+										<child>
+											<object class="GtkLabel">
+												<property name="label">Kimahri victories:</property>
+											</object>
+										</child>
+										<child>
+											<object class="GtkLabel" id="label:victories:kimahri">
+												<property name="label"/>
+												<style>
+													<class name="blue-value"/>
+												</style>
+											</object>
+										</child>
+									</object>
+								</child>
+								<child>
+									<object class="GtkBox">
+										<property name="orientation">horizontal</property>
+										<property name="halign">end</property>
+										<property name="spacing">6</property>
+										<child>
+											<object class="GtkLabel">
+												<property name="label">Rikku kills:</property>
+											</object>
+										</child>
+										<child>
+											<object class="GtkLabel" id="label:kills:rikku">
+												<property name="label"/>
+												<style>
+													<class name="green-value"/>
+												</style>
+											</object>
+										</child>
+									</object>
+								</child>
+								<child>
+									<object class="GtkBox">
+										<property name="orientation">horizontal</property>
+										<property name="halign">end</property>
+										<property name="spacing">6</property>
+										<child>
+											<object class="GtkLabel">
+												<property name="label">Rikku victories:</property>
+											</object>
+										</child>
+										<child>
+											<object class="GtkLabel" id="label:victories:rikku">
+												<property name="label"/>
+												<style>
+													<class name="green-value"/>
+												</style>
+											</object>
+										</child>
+									</object>
+								</child>
+							</object>
+						</child>
+					</object>
+				</child>
+				<!--				<child>-->
+				<!--					<object class="GtkLabel" id="label:version">-->
+				<!--						<property name="label"/>-->
+				<!--						<property name="halign">start</property>-->
+				<!--						<style>-->
+				<!--							<class name="version-label"/>-->
+				<!--						</style>-->
+				<!--					</object>-->
+				<!--				</child>-->
+			</object>
+		</property>
+	</object>
+</interface>

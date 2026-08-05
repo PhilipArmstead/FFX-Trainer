@@ -3,14 +3,17 @@
 
 #pragma once
 
-#ifdef _WIN32
+#ifdef ARCH_WIN
 #include <minwindef.h>
+#include <windef.h>
+#include <stdint.h>
+#include <winbase.h>
 #include <stdio.h>
 #include <tlhelp32.h>
 
 
 int findProcessByName(const char *processName);
-HANDLE getProcessFileDescriptor(int *pid);
+HANDLE getProcessFileDescriptor(uint32_t *pid);
 
 #else
 #include "types.h"

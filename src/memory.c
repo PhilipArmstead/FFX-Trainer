@@ -3,7 +3,7 @@
 
 #include "memory.h"
 
-#ifdef _WIN32
+#ifdef ARCH_WIN
 #include <memoryapi.h>
 #include <minwindef.h>
 #include <tlhelp32.h>
@@ -32,18 +32,18 @@ uintptr_t getModuleBaseAddress(DWORD procId, const char *modName) {
 
 BOOL readFromMemory(HANDLE fd, DWORD base, DWORD address, SIZE_T size, BYTE *buffer) {
 	SIZE_T *bytesRead = {0};
-	return ReadProcessMemory(fd, (LPVOID)(base + address), buffer, size, bytesRead);
+	return ReadProcessMemory(fd, (LPVOID)((uintptr_t)base + (uintptr_t)address), buffer, size, bytesRead);
 }
 
 WINBOOL writeToMemory(HANDLE fd, DWORD base, DWORD address, SIZE_T size, BYTE *buffer) {
 	SIZE_T *bytesRead = {0};
-	return WriteProcessMemory(fd, (LPVOID)(base + address), buffer, size, bytesRead);
+	return WriteProcessMemory(fd, (LPVOID)((uintptr_t)base + (uintptr_t)address), buffer, size, bytesRead);
 }
 
 uint8_t readByte(HANDLE fd, DWORD base, DWORD address) {
 	SIZE_T *bytesRead = {0};
 	uint8_t byte;
-	ReadProcessMemory(fd, (LPVOID)(base + address), &byte, 1, bytesRead);
+	ReadProcessMemory(fd, (LPVOID)((uintptr_t)base + (uintptr_t)address), &byte, 1, bytesRead);
 
 	return byte;
 }

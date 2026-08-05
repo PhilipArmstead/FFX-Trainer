@@ -1,0 +1,63 @@
+body {
+	background: #f4f4f4;
+	color: #111;
+	font-family: "Segoe UI", "Helvetica Neue", sans-serif;
+}
+
+.trainer-root {
+	font-size: 15px;
+}
+
+.link--label {
+	border-radius: 0;
+	font-weight: 400;
+	min-height: 21px;
+	min-width: 0;
+	padding: 0;
+}
+
+.link--label,
+.link--label:hover,
+.link--label:active,
+.link--label:checked,
+.link--label:focus {
+	background: none;
+	border: none;
+	box-shadow: none;
+	color: #111;
+	outline: none;
+}
+
+.hack-active,
+.link--label.hack-active {
+	color: #00c83c;
+}
+
+.stats-list label {
+	font-size: 16px;
+}
+
+.blue-value {
+	color: #4aa3ff;
+}
+
+.gray-value {
+	color: #888;
+}
+
+.red-value {
+	color: #ff3030;
+}
+
+.orange-value {
+	color: #f5a623;
+}
+
+.green-value {
+	color: #39d353;
+}
+
+.version-label {
+	font-size: 16px;
+	font-weight: 600;
+}

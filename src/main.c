@@ -3,6 +3,7 @@
 
 #include <stdint.h>
 #include <stdio.h>
+#include <gtk/gtk.h>
 
 #include "constants.h"
 #include "maths.h"
@@ -10,545 +11,392 @@
 #include "memory.h"
 #include "process.h"
 #include "types.h"
+#include "callbacks.h"
 #include "window.h"
-#include "assets/icons/icon.png.h"
 #include "assets/fonts/FreeSans.ttf.h"
+// #include "assets/icons/icon.png.h"
 
 
-typedef struct {
-	char tidus[8];
-	char yuna[8];
-	char auron[8];
-	char kimahri[8];
-	char wakka[8];
-	char lulu[8];
-	char rikku[8];
-} CharacterString;
+static void activate(GtkApplication *app);
+static gboolean update(gpointer userData);
+G_MODULE_EXPORT void callbackToggle100StealChance(void);
+G_MODULE_EXPORT void callbackToggleRareStealChance(void);
+G_MODULE_EXPORT void callbackToggleAddedSteal(void);
+G_MODULE_EXPORT void callbackSetRareStealChance50(void);
+G_MODULE_EXPORT void callbackSetRareStealChance100(void);
+G_MODULE_EXPORT void callbackSetRareStealChance0(void);
+G_MODULE_EXPORT void callbackToggleRareDropChance(void);
+G_MODULE_EXPORT void callbackSetRareDropChance50(void);
+G_MODULE_EXPORT void callbackSetRareDropChance100(void);
+G_MODULE_EXPORT void callbackSetRareDropChance0(void);
+G_MODULE_EXPORT void callbackToggleGuaranteeEquipmentDrop(void);
+G_MODULE_EXPORT void callbackTogglePerfectSwordplay(void);
+G_MODULE_EXPORT void callbackTogglePerfectBushido(void);
+G_MODULE_EXPORT void callbackTogglePerfectFury(void);
+static gboolean onKeyPress(
+	GtkEventControllerKey *controller,
+	guint keyval,
+	guint keycode,
+	GdkModifierType state,
+	gpointer user_data
+);
+GameContext gameContext = {0};
+ProcessContext processContext = {0};
+WindowContext windowContext = {0};
 
-int main() {
-	#ifdef IS_RELEASE
-	SetTraceLogLevel(LOG_NONE);
-	#endif
-
-	#ifdef _WIN32
-	int pid = 0;
-	HANDLE fd = getProcessFileDescriptor(&pid);
+int main(int argc, char **argv) {
+	#ifdef ARCH_WIN
+	uint32_t pid = 0;
+	processContext.handle = getProcessFileDescriptor(&pid);
+	processContext.pid = pid;
 	#else
-	int64_t fd = getProcessFileDescriptor();
+	processContext.handle = getProcessFileDescriptor();
 	#endif
 
-	#define SCREEN_WIDTH 640
-	#define SCREEN_HEIGHT 420
-	#define FPS 30
+	GtkApplication *app = gtk_application_new("org.gtk.example", G_APPLICATION_DEFAULT_FLAGS);
+	g_signal_connect(app, "activate", G_CALLBACK(activate), NULL);
+	const int status = g_application_run(G_APPLICATION(app), argc, argv);
+	g_object_unref(app);
 
-	const Image icon = LoadImageFromMemory(".png", icon_png, icon_png_len);
-	window_create(SCREEN_WIDTH, SCREEN_HEIGHT, FPS, "FFX Trainer", icon);
+	return status;
+}
 
-	uint16_t framesSinceDataUpdate = 300;
-	#define RESET_RENDER_TIMER() (framesSinceDataUpdate = FPS * 5)
-	char battleCountString[8] = {0};
-	CharacterString kills = {0};
-	CharacterString victories = {0};
+static void activate(GtkApplication *app) {
+	char pathToStylesheet[256] = {0};
+	GtkCssProvider *cssProvider = gtk_css_provider_new();
+	snprintf(pathToStylesheet, sizeof(pathToStylesheet), "%s/app.css", LAYOUTS_DIR);
+	gtk_css_provider_load_from_path(cssProvider, pathToStylesheet);
+	gtk_style_context_add_provider_for_display(
+		gdk_display_get_default(),
+		GTK_STYLE_PROVIDER(cssProvider),
+		GTK_STYLE_PROVIDER_PRIORITY_APPLICATION
+	);
+	g_object_unref(cssProvider);
 
-	/**
-	 * Bit 1 = is perfect Tidus OD toggled?
-	 * Bit 2 = is perfect Lulu OD toggled?
-	 * Bit 3 = is perfect Auron OD toggled?
-	 * Bit 4 = is steal success rate toggled?
-	 * Bit 5 = is added steal toggled?
-	 * Bit 6 = is guaranteed equipment drops toggled?
-	 */
-	uint8_t mask = 0;
-	uint8_t rareStealSuccessValue = RARE_STEAL_CHANCE_ORIGINAL_2;
-	uint8_t moreRareDropsValue = MORE_RARE_DROPS_ORIGINAL;
-	Color perfectStealColour = BLACK;
-	Color guaranteedEquipmentColour = BLACK;
-	Color rareStealColour = BLACK;
-	Color addedStealColour = BLACK;
-	Color moreRareDropsColour = BLACK;
-	Color perfectFuryColour = BLACK;
-	Color perfectBushidoColour = BLACK;
-	Color perfectSwordplayColour = BLACK;
-	Color breakItemLimitColour = BLACK;
+	windowContext = window_create("app", "window:app");
+	gtk_window_set_application(GTK_WINDOW(windowContext.window), GTK_APPLICATION(app));
 
-	#ifdef _WIN32
-	bool isGameRunning = fd != NULL;
-	#else
-	bool isGameRunning = fd != -1;
-	#endif
-
-	uintptr_t base = 0;
-
-	#ifdef _WIN32
-	if (isGameRunning) {
-		base = getModuleBaseAddress(pid, "FFX.exe");
-	}
-	#endif
-
-	#define LOAD_BUTTON_WIDTH 150
-	const Rectangle16 loadButtonRectangle = {
-		.height = 32,
-		.width = LOAD_BUTTON_WIDTH,
-		.y = 16,
-		.x = SCREEN_WIDTH - LOAD_BUTTON_WIDTH - 16
-	};
-
-	#define FONT_SIZE 18
-	Font font = LoadFontFromMemory(".ttf", FreeSans_ttf, 0, FONT_SIZE, 0, 0);
-	const float rareStealTextWidth = MeasureTextEx(font, rareStealString, FONT_SIZE, 0).x;
-	const float rareDropTextWidth = MeasureTextEx(font, rareDropString, FONT_SIZE, 0).x;
-	const float fiftyPercentWidth = MeasureTextEx(font, "50%", FONT_SIZE, 0).x;
-	const float hundredPercentWidth = MeasureTextEx(font, "100%", FONT_SIZE, 0).x;
-	const float zeroPercentWidth = MeasureTextEx(font, "0%", FONT_SIZE, 0).x;
-	const float battlesWidth = MeasureTextEx(font, battlesString, FONT_SIZE, 0).x;
-	const float tidusKillsWidth = MeasureTextEx(font, tidusKillsString, FONT_SIZE, 0).x;
-	const float tidusVictoriesWidth = MeasureTextEx(font, tidusVictoriesString, FONT_SIZE, 0).x;
-	const float yunaKillsWidth = MeasureTextEx(font, yunaKillsString, FONT_SIZE, 0).x;
-	const float yunaVictoriesWidth = MeasureTextEx(font, yunaVictoriesString, FONT_SIZE, 0).x;
-	const float auronKillsWidth = MeasureTextEx(font, auronKillsString, FONT_SIZE, 0).x;
-	const float auronVictoriesWidth = MeasureTextEx(font, auronVictoriesString, FONT_SIZE, 0).x;
-	const float wakkaKillsWidth = MeasureTextEx(font, wakkaKillsString, FONT_SIZE, 0).x;
-	const float wakkaVictoriesWidth = MeasureTextEx(font, wakkaVictoriesString, FONT_SIZE, 0).x;
-	const float luluKillsWidth = MeasureTextEx(font, luluKillsString, FONT_SIZE, 0).x;
-	const float luluVictoriesWidth = MeasureTextEx(font, luluVictoriesString, FONT_SIZE, 0).x;
-	const float kimahriKillsWidth = MeasureTextEx(font, kimahriKillsString, FONT_SIZE, 0).x;
-	const float kimahriVictoriesWidth = MeasureTextEx(font, kimahriVictoriesString, FONT_SIZE, 0).x;
-	const float rikkuKillsWidth = MeasureTextEx(font, rikkuKillsString, FONT_SIZE, 0).x;
-	const float rikkuVictoriesWidth = MeasureTextEx(font, rikkuVictoriesString, FONT_SIZE, 0).x;
-
+	// Set app version
 	#define VERSION_STRING_WIDTH 8
 	char version[VERSION_STRING_WIDTH] = {0};
 	snprintf(version, VERSION_STRING_WIDTH, "v%d.%d.%d", VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH);
-	const float versionHeight = MeasureTextEx(font, version, FONT_SIZE, 0).y;
+	GtkWidget *labelVersion = GTK_WIDGET(gtk_builder_get_object(windowContext.builder, "label:version"));
+	gtk_label_set_text(GTK_LABEL(labelVersion), version);
 
-	while (true) {
-		if (WindowShouldClose()) {
-			break;
-		}
+	// Listen for keypresses
+	GtkEventController *eventController = gtk_event_controller_key_new();
+	g_signal_connect(eventController, "key-pressed", G_CALLBACK(onKeyPress), NULL);
+	gtk_widget_add_controller(GTK_WIDGET(windowContext.window), eventController);
 
-		int keyPressed;
-		do {
-			keyPressed = GetKeyPressed();
+	// Cache widgets
+	GtkBuilder *b = windowContext.builder;
+	gameContext.labelBattles = GTK_LABEL(gtk_builder_get_object(b, "label:battles"));
+	gameContext.labelTidusKills = GTK_LABEL(gtk_builder_get_object(b, "label:kills:tidus"));
+	gameContext.labelTidusVictories = GTK_LABEL(gtk_builder_get_object(b, "label:victories:tidus"));
+	gameContext.labelYunaKills = GTK_LABEL(gtk_builder_get_object(b, "label:kills:yuna"));
+	gameContext.labelYunaVictories = GTK_LABEL(gtk_builder_get_object(b, "label:victories:yuna"));
+	gameContext.labelAuronKills = GTK_LABEL(gtk_builder_get_object(b, "label:kills:auron"));
+	gameContext.labelAuronVictories = GTK_LABEL(gtk_builder_get_object(b, "label:victories:auron"));
+	gameContext.labelRikkuKills = GTK_LABEL(gtk_builder_get_object(b, "label:kills:kimahri"));
+	gameContext.labelRikkuVictories = GTK_LABEL(gtk_builder_get_object(b, "label:victories:kimahri"));
+	gameContext.labelLuluKills = GTK_LABEL(gtk_builder_get_object(b, "label:kills:wakka"));
+	gameContext.labelLuluVictories = GTK_LABEL(gtk_builder_get_object(b, "label:victories:wakka"));
+	gameContext.labelWakkaKills = GTK_LABEL(gtk_builder_get_object(b, "label:kills:lulu"));
+	gameContext.labelWakkaVictories = GTK_LABEL(gtk_builder_get_object(b, "label:victories:lulu"));
+	gameContext.labelKimahriKills = GTK_LABEL(gtk_builder_get_object(b, "label:kills:rikku"));
+	gameContext.labelKimahriVictories = GTK_LABEL(gtk_builder_get_object(b, "label:victories:rikku"));
+	gameContext.buttonTogglePerfectSteal = GTK_WIDGET(gtk_builder_get_object(b, "button:toggle:perfect-steal"));
+	gameContext.buttonRareStealChance = GTK_WIDGET(gtk_builder_get_object(b, "button:toggle:rare-steal-chance"));
+	gameContext.boxRareStealChance = GTK_WIDGET(gtk_builder_get_object(b, "box:rare-steal-chance"));
+	gameContext.labelRareStealChance100 = GTK_WIDGET(gtk_builder_get_object(b, "label:rare-steal-chance:100"));
+	gameContext.labelRareStealChance50 = GTK_WIDGET(gtk_builder_get_object(b, "label:rare-steal-chance:50"));
+	gameContext.labelRareStealChance0 = GTK_WIDGET(gtk_builder_get_object(b, "label:rare-steal-chance:0"));
+	gameContext.buttonToggleAddedSteal = GTK_WIDGET(gtk_builder_get_object(b, "button:toggle:added-steal"));
+	gameContext.buttonToggleRareDropChance = GTK_WIDGET(gtk_builder_get_object(b, "button:toggle:rare-drop-chance"));
+	gameContext.boxRareDropChance = GTK_WIDGET(gtk_builder_get_object(b, "box:rare-drop-chance"));
+	gameContext.labelRareDropChance100 = GTK_WIDGET(gtk_builder_get_object(b, "label:rare-drop-chance:100"));
+	gameContext.labelRareDropChance50 = GTK_WIDGET(gtk_builder_get_object(b, "label:rare-drop-chance:50"));
+	gameContext.labelRareDropChance0 = GTK_WIDGET(gtk_builder_get_object(b, "label:rare-drop-chance:0"));
+	gameContext.buttonGuaranteeEquipmentDrop = GTK_WIDGET(
+		gtk_builder_get_object(b, "button:toggle:guarantee-equipment-drops")
+	);
+	gameContext.buttonTogglePerfectSwordplay = GTK_WIDGET(gtk_builder_get_object(b, "button:toggle:perfect-swordplay"));
+	gameContext.buttonTogglePerfectBushido = GTK_WIDGET(gtk_builder_get_object(b, "button:toggle:perfect-bushido"));
+	gameContext.buttonTogglePerfectFury = GTK_WIDGET(gtk_builder_get_object(b, "button:toggle:perfect-fury"));
 
-			switch (keyPressed) {
-				case '1': {
-					uint8_t *bytes = mask & GUARANTEED_STEAL_TOGGLED
-						? (uint8_t[4]){
-							STEAL_CHANCE_ORIGINAL_0,
-							STEAL_CHANCE_ORIGINAL_1,
-							STEAL_CHANCE_ORIGINAL_2,
-							STEAL_CHANCE_ORIGINAL_3
-						}
-						: (uint8_t[4]){
-							STEAL_CHANCE_NEW_0,
-							STEAL_CHANCE_NEW_1,
-							STEAL_CHANCE_NEW_2,
-							STEAL_CHANCE_NEW_3
-						};
-					writeToMemory(fd, base, STEAL_CHANCE_LOCATION, 4, bytes);;
-					break;
-				}
-				case '2': {
-					uint8_t bytes[3] = {RARE_STEAL_CHANCE_NEW_0, RARE_STEAL_CHANCE_NEW_1};
-					if (rareStealSuccessValue == RARE_STEAL_CHANCE_ORIGINAL_2) {
-						bytes[2] = RARE_STEAL_CHANCE_NEW_2_50_50;
-					} else if (rareStealSuccessValue == RARE_STEAL_CHANCE_NEW_2_50_50) {
-						bytes[0] = 0x39;
-						bytes[2] = 0xc8;
-						bytes[2] = NO_OP;
-					} else if (rareStealSuccessValue == NO_OP) {
-						bytes[2] = RARE_STEAL_CHANCE_NEW_2_NEVER;
-					} else {
-						bytes[0] = RARE_STEAL_CHANCE_ORIGINAL_0;
-						bytes[1] = RARE_STEAL_CHANCE_ORIGINAL_1;
-						bytes[2] = RARE_STEAL_CHANCE_ORIGINAL_2;
-					}
-					writeToMemory(fd, base, RARE_STEAL_CHANCE_LOCATION, 3, bytes);
-					RESET_RENDER_TIMER();
-					break;
-				}
-				case '3': {
-					uint8_t *bytes = mask & ADDED_STEAL_TOGGLED
-						? (uint8_t[2]){
-							ADDED_STEAL_ORIGINAL_0,
-							ADDED_STEAL_ORIGINAL_1,
-						}
-						: (uint8_t[2]){NO_OP, NO_OP};
-					writeToMemory(fd, base, ADDED_STEAL_LOCATION, 2, bytes);
-					RESET_RENDER_TIMER();
-					break;
-				}
-				case '4': {
-					uint8_t bytes[1] = {0};
-					if (moreRareDropsValue == MORE_RARE_DROPS_ORIGINAL) {
-						bytes[0] = MORE_RARE_DROPS_NEW_50_50;
-					} else if (moreRareDropsValue == MORE_RARE_DROPS_NEW_50_50) {
-						bytes[0] = MORE_RARE_DROPS_NEW_ALWAYS;
-					} else if (moreRareDropsValue == MORE_RARE_DROPS_NEW_ALWAYS) {
-						bytes[0] = MORE_RARE_DROPS_NEW_NEVER;
-					} else {
-						bytes[0] = MORE_RARE_DROPS_ORIGINAL;
-					}
-					writeToMemory(fd, base, MORE_RARE_DROPS_LOCATION, 1, bytes);
-					RESET_RENDER_TIMER();
-					break;
-				}
-				case '5': {
-					uint8_t *bytes = mask & GUARANTEED_EQUIPMENT_DROP_TOGGLED
-						? (uint8_t[1]){ALWAYS_DROP_EQUIPMENT_ORIGINAL}
-						: (uint8_t[1]){ALWAYS_DROP_EQUIPMENT_NEW};
-					writeToMemory(fd, base, ALWAYS_DROP_EQUIPMENT_LOCATION, 1, bytes);
-					RESET_RENDER_TIMER();
-					break;
-				}
-				case '6': {
-					uint8_t *byte = mask & BREAK_ITEM_LIMIT_TOGGLED
-						? (uint8_t[1]){BREAK_ITEM_LIMIT_ORIGINAL}
-						: (uint8_t[1]){BREAK_ITEM_LIMIT_NEW};
-					writeToMemory(fd, base, BREAK_ITEM_LIMIT_LOCATION_1, 1, byte);
-					writeToMemory(fd, base, BREAK_ITEM_LIMIT_LOCATION_2, 1, byte);
-					byte = mask & BREAK_ITEM_LIMIT_TOGGLED
-						? (uint8_t[1]){BREAK_ITEM_LIMIT_ORIGINAL_JMP}
-						: (uint8_t[1]){BREAK_ITEM_LIMIT_NEW_JMP};
-					writeToMemory(fd, base, BREAK_ITEM_LIMIT_LOCATION_2, 1, byte);
-					RESET_RENDER_TIMER();
-					break;
-				}
-				case '7': {
-					uint8_t *bytes = mask & PERFECT_TIDUS_OD_TOGGLED
-						? (uint8_t[6]){TIDUS_PERFECT_LIMIT_ORIGINAL}
-						: (uint8_t[6]){TIDUS_PERFECT_LIMIT_NEW};
-					writeToMemory(fd, base, TIDUS_PERFECT_LIMIT_LOCATION, 6, bytes);
-					RESET_RENDER_TIMER();
-					break;
-				}
-				case '8': {
-					uint8_t *bytes = mask & PERFECT_AURON_OD_TOGGLED
-						? (uint8_t[7]){AURON_PERFECT_LIMIT_ORIGINAL}
-						: (uint8_t[7]){AURON_PERFECT_LIMIT_NEW};
-					writeToMemory(fd, base, AURON_PERFECT_LIMIT_LOCATION, 7, bytes);
-					RESET_RENDER_TIMER();
-					break;
-				}
-				case '9': {
-					uint8_t *bytes = mask & PERFECT_LULU_OD_TOGGLED
-						// TODO: put byte length in constant
-						? (uint8_t[6]){LULU_PERFECT_LIMIT_ORIGINAL_1}
-						: (uint8_t[6]){LULU_PERFECT_LIMIT_NEW_1};
-					writeToMemory(fd, base, LULU_PERFECT_LIMIT_LOCATION_1, 6, bytes);
-					bytes = mask & PERFECT_LULU_OD_TOGGLED
-						? (uint8_t[7]){LULU_PERFECT_LIMIT_ORIGINAL_2}
-						: (uint8_t[7]){LULU_PERFECT_LIMIT_NEW_2};
-					writeToMemory(fd, base, LULU_PERFECT_LIMIT_LOCATION_2, 7, bytes);
-					RESET_RENDER_TIMER();
-					break;
-				}
-				default:
-					break;
-			}
-		} while (keyPressed != 0);
+	// Periodic callbacks
+	g_timeout_add(1000, update, NULL);
+	update(NULL);
+}
 
-		// Handle "Load game" button click
-		if (!isGameRunning && IsMouseButtonPressed(0)) {
-			const uint16_t mouseX = GetMouseX();
-			const uint16_t mouseY = GetMouseY();
+static gboolean update(gpointer userData) {
+	#ifdef ARCH_WIN
+	bool isGameRunning = processContext.handle != NULL;
+	#else
+	bool isGameRunning = processContext.handle != -1;
+	#endif
 
-			if (mouseX > loadButtonRectangle.x &&
-				mouseX < loadButtonRectangle.x + loadButtonRectangle.width &&
-				mouseY > loadButtonRectangle.y &&
-				mouseY < loadButtonRectangle.y + loadButtonRectangle.height) {
-				#ifdef _WIN32
-				fd = getProcessFileDescriptor(&pid);
-				isGameRunning = fd != NULL;
-				if (isGameRunning) {
-					base = getModuleBaseAddress(pid, "FFX.exe");
-				}
-				#else
-				fd = getProcessFileDescriptor();
-				isGameRunning = fd != -1;
-				#endif
-			}
-		}
+	#ifdef ARCH_WIN
+	if (isGameRunning && processContext.moduleBaseAddress == 0) {
+		processContext.moduleBaseAddress = getModuleBaseAddress(processContext.pid, "FFX.exe");
+	}
+	#endif
 
-		window_beforeDraw();
+	// These numbers can't both be > 0 and equal.
+	// If they are, it means we've failed to read memory correctly
+	uint8_t buffer[4];
+	readFromMemory(processContext.handle, processContext.moduleBaseAddress, TOTAL_BATTLES_LOCATION, 4, buffer);
+	const uint64_t battleCount = hexBytesToInt(buffer, 4);
+	readFromMemory(processContext.handle, processContext.moduleBaseAddress, YUNA_VICTORIES_LOCATION, 4, buffer);
+	const uint64_t yunaVictories = hexBytesToInt(buffer, 4);
 
-		if (!isGameRunning) {
-			DrawRectangle(
-				loadButtonRectangle.x,
-				loadButtonRectangle.y,
-				loadButtonRectangle.width,
-				loadButtonRectangle.height,
-				LIGHTGRAY
-			);
-			DrawText("Load game", loadButtonRectangle.x + 15, loadButtonRectangle.y + 5, 24, BLACK);
-
-			DrawText(
-				"Could not open game",
-				loadButtonRectangle.x + 8 + 7,
-				loadButtonRectangle.y + loadButtonRectangle.height + 4,
-				12,
-				RED
-			);
-		} else {
-			if (framesSinceDataUpdate > FPS * 5) {
-				// These numbers can't both be > 0 and equal.
-				// If they are, it means we've failed to read memory correctly
-				uint8_t buffer[4];
-				readFromMemory(fd, base, TOTAL_BATTLES_LOCATION, 4, buffer);
-				const uint64_t battleCount = hexBytesToInt(buffer, 4);
-				readFromMemory(fd, base, YUNA_VICTORIES_LOCATION, 4, buffer);
-				const uint64_t yunaVictories = hexBytesToInt(buffer, 4);
-
-				if (battleCount > 0 && battleCount == yunaVictories) {
-					isGameRunning = false;
-					continue;
-				}
-
-				#define readMemoryInToString(address, string) {										\
-					readFromMemory(fd, base, address, 4, buffer);										\
-					snprintf(string, 8, LONG_SPECIFIER, hexBytesToInt(buffer, 4));	\
-				}
-
-				snprintf(battleCountString, 8, LONG_SPECIFIER, battleCount);
-				readMemoryInToString(TIDUS_KILLS_LOCATION, kills.tidus);
-				readMemoryInToString(TIDUS_VICTORIES_LOCATION, victories.tidus);
-				readMemoryInToString(YUNA_KILLS_LOCATION, kills.yuna);
-				snprintf(victories.yuna, 8, LONG_SPECIFIER, yunaVictories);
-				readMemoryInToString(AURON_KILLS_LOCATION, kills.auron);
-				readMemoryInToString(AURON_VICTORIES_LOCATION, victories.auron);
-				readMemoryInToString(KIMAHRI_KILLS_LOCATION, kills.kimahri);
-				readMemoryInToString(KIMAHRI_VICTORIES_LOCATION, victories.kimahri);
-				readMemoryInToString(WAKKA_KILLS_LOCATION, kills.wakka);
-				readMemoryInToString(WAKKA_VICTORIES_LOCATION, victories.wakka);
-				readMemoryInToString(LULU_KILLS_LOCATION, kills.lulu);
-				readMemoryInToString(LULU_VICTORIES_LOCATION, victories.lulu);
-				readMemoryInToString(RIKKU_KILLS_LOCATION, kills.rikku);
-				readMemoryInToString(RIKKU_VICTORIES_LOCATION, victories.rikku);
-
-				readFromMemory(fd, base, STEAL_CHANCE_LOCATION, 4, buffer);
-				if (
-					buffer[0] != STEAL_CHANCE_ORIGINAL_0 ||
-					buffer[1] != STEAL_CHANCE_ORIGINAL_1 ||
-					buffer[2] != STEAL_CHANCE_ORIGINAL_2 ||
-					buffer[3] != STEAL_CHANCE_ORIGINAL_3
-				) {
-					mask |= GUARANTEED_STEAL_TOGGLED;
-				} else {
-					mask &= ~GUARANTEED_STEAL_TOGGLED;
-				}
-				readFromMemory(fd, base, RARE_STEAL_CHANCE_LOCATION + 2, 1, buffer);
-				rareStealSuccessValue = buffer[0];
-				readFromMemory(fd, base, ADDED_STEAL_LOCATION, 3, buffer);
-				if (buffer[0] != ADDED_STEAL_ORIGINAL_0 || buffer[1] != ADDED_STEAL_ORIGINAL_1) {
-					mask |= ADDED_STEAL_TOGGLED;
-				} else {
-					mask &= ~ADDED_STEAL_TOGGLED;
-				}
-				readFromMemory(fd, base, MORE_RARE_DROPS_LOCATION, 1, buffer);
-				moreRareDropsValue = buffer[0];
-
-				readFromMemory(fd, base, BREAK_ITEM_LIMIT_LOCATION_1, 1, buffer);
-				if (buffer[0] != BREAK_ITEM_LIMIT_ORIGINAL) {
-					mask |= BREAK_ITEM_LIMIT_TOGGLED;
-				} else {
-					mask &= ~BREAK_ITEM_LIMIT_TOGGLED;
-				}
-
-				readFromMemory(fd, base, TIDUS_PERFECT_LIMIT_LOCATION + 5, 1, buffer);
-				if (buffer[0] == NO_OP) {
-					mask |= PERFECT_TIDUS_OD_TOGGLED;
-				} else {
-					mask &= ~PERFECT_TIDUS_OD_TOGGLED;
-				}
-
-				readFromMemory(fd, base, LULU_PERFECT_LIMIT_LOCATION_2 + 5, 1, buffer);
-				if (buffer[0] == NO_OP) {
-					mask |= PERFECT_LULU_OD_TOGGLED;
-				} else {
-					mask &= ~PERFECT_LULU_OD_TOGGLED;
-				}
-				readFromMemory(fd, base, AURON_PERFECT_LIMIT_LOCATION + 5, 1, buffer);
-				if (buffer[0] == NO_OP) {
-					mask |= PERFECT_AURON_OD_TOGGLED;
-				} else {
-					mask &= ~PERFECT_AURON_OD_TOGGLED;
-				}
-				readFromMemory(fd, base, ALWAYS_DROP_EQUIPMENT_LOCATION, 1, buffer);
-				if (buffer[0] != ALWAYS_DROP_EQUIPMENT_ORIGINAL) {
-					mask |= GUARANTEED_EQUIPMENT_DROP_TOGGLED;
-				} else {
-					mask &= ~GUARANTEED_EQUIPMENT_DROP_TOGGLED;
-				}
-
-				perfectStealColour = mask & GUARANTEED_STEAL_TOGGLED ? GREEN : BLACK;
-				addedStealColour = mask & ADDED_STEAL_TOGGLED ? GREEN : BLACK;
-				rareStealColour = rareStealSuccessValue != RARE_STEAL_CHANCE_ORIGINAL_2 ? GREEN : BLACK;
-				guaranteedEquipmentColour = mask & GUARANTEED_EQUIPMENT_DROP_TOGGLED ? GREEN : BLACK;
-				moreRareDropsColour = moreRareDropsValue != MORE_RARE_DROPS_ORIGINAL ? GREEN : BLACK;
-				perfectFuryColour = mask & PERFECT_LULU_OD_TOGGLED ? GREEN : BLACK;
-				perfectBushidoColour = mask & PERFECT_AURON_OD_TOGGLED ? GREEN : BLACK;
-				perfectSwordplayColour = mask & PERFECT_TIDUS_OD_TOGGLED ? GREEN : BLACK;
-				breakItemLimitColour = mask & BREAK_ITEM_LIMIT_TOGGLED ? GREEN : BLACK;
-
-				framesSinceDataUpdate = 0;
-			}
-
-			// Print game stats
-			#define STATS_RIGHT_FINAL (SCREEN_WIDTH - STATS_RIGHT)
-			#define VALUE_X (STATS_RIGHT_FINAL + 8)
-			const float statsTop = loadButtonRectangle.y;
-			DrawTextEx(font, battlesString, (Vector2){STATS_RIGHT_FINAL - battlesWidth, statsTop}, FONT_SIZE, 0, BLACK);
-			DrawTextEx(font, battleCountString, (Vector2){VALUE_X, statsTop}, FONT_SIZE, 0, BLACK);
-
-			#define drawStatisticLabel(string, width, i) {												\
-				DrawTextEx(																													\
-					font,																															\
-					string,																														\
-					(Vector2){STATS_RIGHT_FINAL - width, statsTop + LINE_HEIGHT * i},	\
-					FONT_SIZE,																												\
-					0,																																\
-					BLACK																															\
-				);																																	\
-			}
-			#define drawStatisticText(string, i, colour) {																											\
-				DrawTextEx(font, string, (Vector2){VALUE_X, statsTop + LINE_HEIGHT * i++}, FONT_SIZE, 0, colour);	\
-			}
-
-			uint8_t i = 1;
-			drawStatisticLabel(tidusKillsString, tidusKillsWidth, i);
-			drawStatisticText(kills.tidus, i, SKYBLUE);
-			drawStatisticLabel(tidusVictoriesString, tidusVictoriesWidth, i);
-			drawStatisticText(victories.tidus, i, SKYBLUE);
-			drawStatisticLabel(yunaKillsString, yunaKillsWidth, i);
-			drawStatisticText(kills.yuna, i, GRAY);
-			drawStatisticLabel(yunaVictoriesString, yunaVictoriesWidth, i);
-			drawStatisticText(victories.yuna, i, GRAY);
-			drawStatisticLabel(auronKillsString, auronKillsWidth, i);
-			drawStatisticText(kills.auron, i, RED);
-			drawStatisticLabel(auronVictoriesString, auronVictoriesWidth, i);
-			drawStatisticText(victories.auron, i, RED);
-			drawStatisticLabel(wakkaKillsString, wakkaKillsWidth, i);
-			drawStatisticText(kills.wakka, i, ORANGE);
-			drawStatisticLabel(wakkaVictoriesString, wakkaVictoriesWidth, i);
-			drawStatisticText(victories.wakka, i, ORANGE);
-			drawStatisticLabel(luluKillsString, luluKillsWidth, i);
-			drawStatisticText(kills.lulu, i, BLACK);
-			drawStatisticLabel(luluVictoriesString, luluVictoriesWidth, i);
-			drawStatisticText(victories.lulu, i, BLACK);
-			drawStatisticLabel(kimahriKillsString, kimahriKillsWidth, i);
-			drawStatisticText(kills.kimahri, i, BLUE);
-			drawStatisticLabel(kimahriVictoriesString, kimahriVictoriesWidth, i);
-			drawStatisticText(victories.kimahri, i, BLUE);
-			drawStatisticLabel(rikkuKillsString, rikkuKillsWidth, i);
-			drawStatisticText(kills.rikku, i, GREEN);
-			drawStatisticLabel(rikkuVictoriesString, rikkuVictoriesWidth, i);
-			drawStatisticText(victories.rikku, i, GREEN);
-		}
-
-		uint8_t y = 1;
-		#define drawHackLabel(string, colour) {																											\
-			DrawTextEx(font, string, (Vector2){PADDING, (float)y++ * LINE_HEIGHT}, FONT_SIZE, 0, colour);	\
-		}
-
-		drawHackLabel(perfectStealString, perfectStealColour);
-		drawHackLabel(rareStealString, rareStealColour);
-		drawHackLabel(addedStealString, addedStealColour);
-		drawHackLabel(rareDropString, moreRareDropsColour);
-		drawHackLabel(alwaysDropEquipmentString, guaranteedEquipmentColour);
-		drawHackLabel(breakItemLimitString, breakItemLimitColour);
-		drawHackLabel(perfectSwordplayString, perfectSwordplayColour);
-		drawHackLabel(perfectBushidoString, perfectBushidoColour);
-		drawHackLabel(perfectFuryString, perfectFuryColour);
-
-		if (rareStealSuccessValue != RARE_STEAL_CHANCE_ORIGINAL_2) {
-			DrawTextEx(font, "(", (Vector2){PADDING + rareStealTextWidth + 6, 50}, FONT_SIZE, 0, BLACK);
-			DrawTextEx(
-				font,
-				")",
-				(Vector2){
-					PADDING + rareStealTextWidth + fiftyPercentWidth + hundredPercentWidth + zeroPercentWidth + 22,
-					50
-				},
-				FONT_SIZE,
-				0,
-				BLACK
-			);
-			DrawTextEx(
-				font,
-				"50%",
-				(Vector2){PADDING + rareStealTextWidth + 12, 50},
-				FONT_SIZE,
-				0,
-				rareStealSuccessValue == RARE_STEAL_CHANCE_NEW_2_50_50 ? GREEN : BLACK
-			);
-			DrawTextEx(
-				font,
-				"100%",
-				(Vector2){PADDING + rareStealTextWidth + fiftyPercentWidth + 16, 50},
-				FONT_SIZE,
-				0,
-				rareStealSuccessValue == NO_OP ? GREEN : BLACK
-			);
-			DrawTextEx(
-				font,
-				"0%",
-				(Vector2){PADDING + rareStealTextWidth + fiftyPercentWidth + hundredPercentWidth + 22, 50},
-				FONT_SIZE,
-				0,
-				rareStealSuccessValue == RARE_STEAL_CHANCE_NEW_2_NEVER ? GREEN : BLACK
-			);
-		}
-
-		if (moreRareDropsValue != MORE_RARE_DROPS_ORIGINAL) {
-			DrawTextEx(font, "(", (Vector2){PADDING + rareDropTextWidth + 6, 102}, FONT_SIZE, 0, BLACK);
-			DrawTextEx(
-				font,
-				")",
-				(Vector2){
-					PADDING + rareDropTextWidth + fiftyPercentWidth + hundredPercentWidth + zeroPercentWidth + 22,
-					102 // TODO: derive this the same way we get the position of the cheat label
-				},
-				FONT_SIZE,
-				0,
-				BLACK
-			);
-			DrawTextEx(
-				font,
-				"50%",
-				(Vector2){PADDING + rareDropTextWidth + 12, 102},
-				FONT_SIZE,
-				0,
-				moreRareDropsValue == MORE_RARE_DROPS_NEW_50_50 ? GREEN : BLACK
-			);
-			DrawTextEx(
-				font,
-				"100%",
-				(Vector2){PADDING + rareDropTextWidth + fiftyPercentWidth + 16, 102},
-				FONT_SIZE,
-				0,
-				moreRareDropsValue == MORE_RARE_DROPS_NEW_ALWAYS ? GREEN : BLACK
-			);
-			DrawTextEx(
-				font,
-				"0%",
-				(Vector2){PADDING + rareDropTextWidth + fiftyPercentWidth + hundredPercentWidth + 22, 102},
-				FONT_SIZE,
-				0,
-				moreRareDropsValue == MORE_RARE_DROPS_NEW_NEVER ? GREEN : BLACK
-			);
-		}
-
-		DrawTextEx(font, version, (Vector2){PADDING, (float)SCREEN_HEIGHT - versionHeight - PADDING}, FONT_SIZE, 0, BLACK);
-
-		window_afterDraw();
-
-		++framesSinceDataUpdate;
+	if (battleCount > 0 && battleCount == yunaVictories) {
+		processContext.handle = NULL;
+		processContext.moduleBaseAddress = 0;
+		return G_SOURCE_CONTINUE;
 	}
 
-	UnloadFont(font);
-	UnloadImage(icon);
+	{
+		char battleCountString[11] = {0};
+		snprintf(battleCountString, sizeof(battleCountString), LONG_SPECIFIER, battleCount);
+		gtk_label_set_text(gameContext.labelBattles, battleCountString);
+	}
 
-	window_destroy();
+	char string[8];
+	#define readMemoryInToString(address, label) {										\
+		readFromMemory(processContext.handle, processContext.moduleBaseAddress, address, 4, buffer); \
+		string[0] = '\0'; \
+		snprintf(string, 8, "%d", hexBytesToInt(buffer, 4)); \
+		gtk_label_set_text(label, string); \
+	}
 
-	return 0;
+	readMemoryInToString(TIDUS_KILLS_LOCATION, gameContext.labelTidusKills);
+	readMemoryInToString(TIDUS_VICTORIES_LOCATION, gameContext.labelTidusVictories);
+	readMemoryInToString(YUNA_KILLS_LOCATION, gameContext.labelYunaKills);
+	readMemoryInToString(YUNA_VICTORIES_LOCATION, gameContext.labelYunaVictories);
+	readMemoryInToString(AURON_KILLS_LOCATION, gameContext.labelAuronKills);
+	readMemoryInToString(AURON_VICTORIES_LOCATION, gameContext.labelAuronVictories);
+	readMemoryInToString(KIMAHRI_KILLS_LOCATION, gameContext.labelKimahriKills);
+	readMemoryInToString(KIMAHRI_VICTORIES_LOCATION, gameContext.labelKimahriVictories);
+	readMemoryInToString(WAKKA_KILLS_LOCATION, gameContext.labelWakkaKills);
+	readMemoryInToString(WAKKA_VICTORIES_LOCATION, gameContext.labelWakkaVictories);
+	readMemoryInToString(LULU_KILLS_LOCATION, gameContext.labelLuluKills);
+	readMemoryInToString(LULU_VICTORIES_LOCATION, gameContext.labelLuluVictories);
+	readMemoryInToString(RIKKU_KILLS_LOCATION, gameContext.labelRikkuKills);
+	readMemoryInToString(RIKKU_VICTORIES_LOCATION, gameContext.labelRikkuVictories);
+
+	readFromMemory(processContext.handle, processContext.moduleBaseAddress, STEAL_CHANCE_LOCATION, 4, buffer);
+	if (
+		buffer[0] != STEAL_CHANCE_ORIGINAL_0 ||
+		buffer[1] != STEAL_CHANCE_ORIGINAL_1 ||
+		buffer[2] != STEAL_CHANCE_ORIGINAL_2 ||
+		buffer[3] != STEAL_CHANCE_ORIGINAL_3
+	) {
+		gameContext.mask |= GUARANTEED_STEAL_TOGGLED;
+	} else {
+		gameContext.mask &= ~GUARANTEED_STEAL_TOGGLED;
+	}
+	readFromMemory(processContext.handle, processContext.moduleBaseAddress, RARE_STEAL_CHANCE_LOCATION + 2, 1, buffer);
+	gameContext.rareStealSuccessValue = buffer[0];
+	readFromMemory(processContext.handle, processContext.moduleBaseAddress, ADDED_STEAL_LOCATION, 3, buffer);
+	if (buffer[0] != ADDED_STEAL_ORIGINAL_0 || buffer[1] != ADDED_STEAL_ORIGINAL_1) {
+		gameContext.mask |= ADDED_STEAL_TOGGLED;
+	} else {
+		gameContext.mask &= ~ADDED_STEAL_TOGGLED;
+	}
+	readFromMemory(processContext.handle, processContext.moduleBaseAddress, MORE_RARE_DROPS_LOCATION, 1, buffer);
+	gameContext.rareDropSuccessValue = buffer[0];
+
+	readFromMemory(processContext.handle, processContext.moduleBaseAddress, TIDUS_PERFECT_LIMIT_LOCATION + 5, 1, buffer);
+	if (buffer[0] == NO_OP) {
+		gameContext.mask |= PERFECT_TIDUS_OD_TOGGLED;
+	} else {
+		gameContext.mask &= ~PERFECT_TIDUS_OD_TOGGLED;
+	}
+
+	readFromMemory(processContext.handle, processContext.moduleBaseAddress, LULU_PERFECT_LIMIT_LOCATION_2 + 5, 1, buffer);
+	if (buffer[0] == NO_OP) {
+		gameContext.mask |= PERFECT_LULU_OD_TOGGLED;
+	} else {
+		gameContext.mask &= ~PERFECT_LULU_OD_TOGGLED;
+	}
+	readFromMemory(processContext.handle, processContext.moduleBaseAddress, AURON_PERFECT_LIMIT_LOCATION + 5, 1, buffer);
+	if (buffer[0] == NO_OP) {
+		gameContext.mask |= PERFECT_AURON_OD_TOGGLED;
+	} else {
+		gameContext.mask &= ~PERFECT_AURON_OD_TOGGLED;
+	}
+	readFromMemory(processContext.handle, processContext.moduleBaseAddress, ALWAYS_DROP_EQUIPMENT_LOCATION, 1, buffer);
+	if (buffer[0] != ALWAYS_DROP_EQUIPMENT_ORIGINAL) {
+		gameContext.mask |= GUARANTEED_EQUIPMENT_DROP_TOGGLED;
+	} else {
+		gameContext.mask &= ~GUARANTEED_EQUIPMENT_DROP_TOGGLED;
+	}
+
+	if (gameContext.mask & GUARANTEED_STEAL_TOGGLED) {
+		gtk_widget_add_css_class(gameContext.buttonTogglePerfectSteal, "hack-active");
+	} else {
+		gtk_widget_remove_css_class(gameContext.buttonTogglePerfectSteal, "hack-active");
+	}
+
+	if (gameContext.rareStealSuccessValue != RARE_STEAL_CHANCE_ORIGINAL_2) {
+		gtk_widget_add_css_class(gameContext.buttonRareStealChance, "hack-active");
+		gtk_widget_set_visible(gameContext.boxRareStealChance, true);
+
+		if (gameContext.rareStealSuccessValue == RARE_STEAL_CHANCE_NEW_2_50_50) {
+			gtk_widget_add_css_class(gameContext.labelRareStealChance50, "hack-active");
+			gtk_widget_remove_css_class(gameContext.labelRareStealChance100, "hack-active");
+			gtk_widget_remove_css_class(gameContext.labelRareStealChance0, "hack-active");
+		} else if (gameContext.rareStealSuccessValue == RARE_STEAL_CHANCE_NEW_2_NEVER) {
+			gtk_widget_add_css_class(gameContext.labelRareStealChance0, "hack-active");
+			gtk_widget_remove_css_class(gameContext.labelRareStealChance100, "hack-active");
+			gtk_widget_remove_css_class(gameContext.labelRareStealChance50, "hack-active");
+		} else {
+			gtk_widget_add_css_class(gameContext.labelRareStealChance100, "hack-active");
+			gtk_widget_remove_css_class(gameContext.labelRareStealChance0, "hack-active");
+			gtk_widget_remove_css_class(gameContext.labelRareStealChance50, "hack-active");
+		}
+	} else {
+		gtk_widget_set_visible(gameContext.boxRareStealChance, false);
+		gtk_widget_remove_css_class(gameContext.buttonRareStealChance, "hack-active");
+	}
+
+	if (gameContext.mask & ADDED_STEAL_TOGGLED) {
+		gtk_widget_add_css_class(gameContext.buttonToggleAddedSteal, "hack-active");
+	} else {
+		gtk_widget_remove_css_class(gameContext.buttonToggleAddedSteal, "hack-active");
+	}
+
+	if (gameContext.rareDropSuccessValue != MORE_RARE_DROPS_ORIGINAL) {
+		gtk_widget_add_css_class(gameContext.buttonToggleRareDropChance, "hack-active");
+		gtk_widget_set_visible(gameContext.boxRareDropChance, true);
+
+		if (gameContext.rareDropSuccessValue == MORE_RARE_DROPS_NEW_50_50) {
+			gtk_widget_add_css_class(gameContext.labelRareDropChance50, "hack-active");
+			gtk_widget_remove_css_class(gameContext.labelRareDropChance100, "hack-active");
+			gtk_widget_remove_css_class(gameContext.labelRareDropChance0, "hack-active");
+		} else if (gameContext.rareDropSuccessValue == MORE_RARE_DROPS_NEW_NEVER) {
+			gtk_widget_add_css_class(gameContext.labelRareDropChance0, "hack-active");
+			gtk_widget_remove_css_class(gameContext.labelRareDropChance100, "hack-active");
+			gtk_widget_remove_css_class(gameContext.labelRareDropChance50, "hack-active");
+		} else {
+			gtk_widget_add_css_class(gameContext.labelRareDropChance100, "hack-active");
+			gtk_widget_remove_css_class(gameContext.labelRareDropChance0, "hack-active");
+			gtk_widget_remove_css_class(gameContext.labelRareDropChance50, "hack-active");
+		}
+	} else {
+		gtk_widget_set_visible(gameContext.boxRareDropChance, false);
+		gtk_widget_remove_css_class(gameContext.buttonToggleRareDropChance, "hack-active");
+	}
+
+	if (gameContext.mask & GUARANTEED_EQUIPMENT_DROP_TOGGLED) {
+		gtk_widget_add_css_class(gameContext.buttonGuaranteeEquipmentDrop, "hack-active");
+	} else {
+		gtk_widget_remove_css_class(gameContext.buttonGuaranteeEquipmentDrop, "hack-active");
+	}
+
+	if (gameContext.mask & PERFECT_TIDUS_OD_TOGGLED) {
+		gtk_widget_add_css_class(gameContext.buttonTogglePerfectSwordplay, "hack-active");
+	} else {
+		gtk_widget_remove_css_class(gameContext.buttonTogglePerfectSwordplay, "hack-active");
+	}
+
+	if (gameContext.mask & PERFECT_AURON_OD_TOGGLED) {
+		gtk_widget_add_css_class(gameContext.buttonTogglePerfectBushido, "hack-active");
+	} else {
+		gtk_widget_remove_css_class(gameContext.buttonTogglePerfectBushido, "hack-active");
+	}
+
+	if (gameContext.mask & PERFECT_LULU_OD_TOGGLED) {
+		gtk_widget_add_css_class(gameContext.buttonTogglePerfectFury, "hack-active");
+	} else {
+		gtk_widget_remove_css_class(gameContext.buttonTogglePerfectFury, "hack-active");
+	}
+
+	return G_SOURCE_CONTINUE;
+}
+
+G_MODULE_EXPORT void callbackToggle100StealChance(void) {
+	toggle100StealChance(processContext, gameContext);
+	update(NULL);
+}
+
+G_MODULE_EXPORT void callbackToggleRareStealChance(void) {
+	toggleRareStealChance(processContext, gameContext.rareStealSuccessValue);
+	update(NULL);
+}
+
+G_MODULE_EXPORT void callbackSetRareStealChance50(void) {
+	toggleRareStealChance(processContext, RARE_STEAL_CHANCE_ORIGINAL_2);
+	update(NULL);
+}
+
+G_MODULE_EXPORT void callbackSetRareStealChance100(void) {
+	toggleRareStealChance(processContext, RARE_STEAL_CHANCE_NEW_2_50_50);
+	update(NULL);
+}
+
+G_MODULE_EXPORT void callbackSetRareStealChance0(void) {
+	toggleRareStealChance(processContext, NO_OP);
+	update(NULL);
+}
+
+G_MODULE_EXPORT void callbackToggleRareDropChance(void) {
+	toggleRareDropChance(processContext, gameContext.rareDropSuccessValue);
+	update(NULL);
+}
+
+G_MODULE_EXPORT void callbackSetRareDropChance50(void) {
+	toggleRareDropChance(processContext, MORE_RARE_DROPS_ORIGINAL);
+	update(NULL);
+}
+
+G_MODULE_EXPORT void callbackSetRareDropChance100(void) {
+	toggleRareDropChance(processContext, MORE_RARE_DROPS_NEW_50_50);
+	update(NULL);
+}
+
+G_MODULE_EXPORT void callbackSetRareDropChance0(void) {
+	toggleRareDropChance(processContext, MORE_RARE_DROPS_NEW_ALWAYS);
+	update(NULL);
+}
+
+G_MODULE_EXPORT void callbackToggleAddedSteal(void) {
+	toggleAddedSteal(processContext, gameContext);
+	update(NULL);
+}
+
+G_MODULE_EXPORT void callbackToggleGuaranteeEquipmentDrop(void) {
+	toggleGuaranteeEquipmentDrop(processContext, gameContext);
+	update(NULL);
+}
+
+G_MODULE_EXPORT void callbackTogglePerfectSwordplay(void) {
+	togglePerfectSwordplay(processContext, gameContext);
+	update(NULL);
+}
+
+G_MODULE_EXPORT void callbackTogglePerfectBushido(void) {
+	togglePerfectBushido(processContext, gameContext);
+	update(NULL);
+}
+
+G_MODULE_EXPORT void callbackTogglePerfectFury(void) {
+	togglePerfectFury(processContext, gameContext);
+	update(NULL);
+}
+
+static gboolean onKeyPress(
+	GtkEventControllerKey *controller,
+	guint keyval,
+	guint keycode,
+	const GdkModifierType state,
+	gpointer user_data
+) {
+	const bool wasHandled = handleKeyPress(processContext, gameContext, keycode);
+	if (wasHandled) {
+		update(NULL);
+	}
+
+	return wasHandled;
 }
