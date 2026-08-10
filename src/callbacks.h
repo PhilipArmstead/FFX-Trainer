@@ -6,12 +6,24 @@
 #include "types.h"
 
 
-void toggle100StealChance(ProcessContext processContext, GameContext gameContext);
-void toggleRareStealChance(ProcessContext processContext, uint8_t rareStealSuccessValue);
-void toggleAddedSteal(ProcessContext processContext, GameContext gameContext);
-void toggleRareDropChance(ProcessContext processContext, uint8_t rareDropSuccessValue);
-void toggleGuaranteeEquipmentDrop(ProcessContext processContext, GameContext gameContext);
-void togglePerfectSwordplay(ProcessContext processContext, GameContext gameContext);
-void togglePerfectBushido(ProcessContext processContext, GameContext gameContext);
-void togglePerfectFury(ProcessContext processContext, GameContext gameContext);
-bool handleKeyPress(ProcessContext processContext, GameContext gameContext, uint8_t key);
+G_MODULE_EXPORT void callbackToggle100StealChance(void);
+G_MODULE_EXPORT void callbackToggleRareStealChance(void);
+G_MODULE_EXPORT void callbackToggleAddedSteal(void);
+G_MODULE_EXPORT void callbackSetRareStealChance50(void);
+G_MODULE_EXPORT void callbackSetRareStealChance100(void);
+G_MODULE_EXPORT void callbackSetRareStealChance0(void);
+G_MODULE_EXPORT void callbackToggleRareDropChance(void);
+G_MODULE_EXPORT void callbackSetRareDropChance50(void);
+G_MODULE_EXPORT void callbackSetRareDropChance100(void);
+G_MODULE_EXPORT void callbackSetRareDropChance0(void);
+G_MODULE_EXPORT void callbackToggleGuaranteeEquipmentDrop(void);
+G_MODULE_EXPORT void callbackTogglePerfectSwordplay(void);
+G_MODULE_EXPORT void callbackTogglePerfectBushido(void);
+G_MODULE_EXPORT void callbackTogglePerfectFury(void);
+gboolean onKeyPress(
+	GtkEventControllerKey *controller,
+	guint keyval,
+	guint keycode,
+	GdkModifierType state,
+	gpointer user_data
+);

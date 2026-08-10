@@ -22,6 +22,10 @@ add_executable(FFXTrainer
 	src/window.c
 	src/callbacks.c
 	src/callbacks.h
+	src/globals.c
+	src/globals.h
+	src/ui.c
+	src/ui.h
 )
 
 if (WIN32)
