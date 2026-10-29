@@ -6,9 +6,12 @@
 #define _WIN32_WINNT 0x0601
 
 #include <stdint.h>
+#include <string.h>
 #include <windows.h>
 #include <windowsx.h>
 #include <winuser.h>
+
+#include "trainer.h"
 
 #ifndef WM_DPICHANGED
 #define WM_DPICHANGED 0x02E0
@@ -41,8 +44,8 @@ enum {
 	LINE_LEFT  = 25,
 	LINE_RIGHT = 27,
 	FONT_PX    = 15,
-	ROW_COUNT  = 8,
-	STAT_COUNT = 15,
+	ROW_COUNT  = TRAINER_FEATURE_COUNT,
+	STAT_COUNT = TRAINER_STAT_COUNT,
 	MAX_RUNS   = 8,
 	LINE_CHARS = 64
 };
@@ -57,7 +60,6 @@ typedef struct {
 
 typedef struct {
 	const wchar_t *label;
-	const wchar_t *value;
 	COLORREF color;
 } StatDef;
 
@@ -122,24 +124,25 @@ static const SegDef g_extraSegs[] = {
 #define EXTRA_SEG_COUNT ((int)(sizeof g_extraSegs / sizeof g_extraSegs[0]))
 
 static const StatDef g_statDefs[STAT_COUNT] = {
-	{L"Battles:", L"65", COL_LABEL},
-	{L"Tidus kills:", L"81", COL_BLUE},
-	{L"Tidus victories:", L"63", COL_BLUE},
-	{L"Yuna kills:", L"4", COL_GREY},
-	{L"Yuna victories:", L"31", COL_GREY},
-	{L"Auron kills:", L"7", COL_RED},
-	{L"Auron victories:", L"5", COL_RED},
-	{L"Wakka kills:", L"24", COL_ORANGE},
-	{L"Wakka victories:", L"37", COL_ORANGE},
-	{L"Lulu kills:", L"18", COL_GREY},
-	{L"Lulu victories:", L"18", COL_GREY},
-	{L"Kimahri kills:", L"3", COL_BLUE},
-	{L"Kimahri victories:", L"7", COL_BLUE},
-	{L"Rikku kills:", L"1", COL_GREEN},
-	{L"Rikku victories:", L"20", COL_GREEN}
+	{L"Battles:", COL_LABEL},
+	{L"Tidus kills:", COL_BLUE},
+	{L"Tidus victories:", COL_BLUE},
+	{L"Yuna kills:", COL_GREY},
+	{L"Yuna victories:", COL_GREY},
+	{L"Auron kills:", COL_RED},
+	{L"Auron victories:", COL_RED},
+	{L"Wakka kills:", COL_ORANGE},
+	{L"Wakka victories:", COL_ORANGE},
+	{L"Lulu kills:", COL_GREY},
+	{L"Lulu victories:", COL_GREY},
+	{L"Kimahri kills:", COL_BLUE},
+	{L"Kimahri victories:", COL_BLUE},
+	{L"Rikku kills:", COL_GREEN},
+	{L"Rikku victories:", COL_GREEN}
 };
 
-static uint8_t g_state[ROW_COUNT];
+static TrainerSnapshot g_snapshot;
+static wchar_t g_statValues[STAT_COUNT][TRAINER_STAT_CHARS];
 static RowLayout g_rowLayout[ROW_COUNT];
 static StatLayout g_statLayout[STAT_COUNT];
 static int g_versionX, g_versionY;
@@ -295,9 +298,9 @@ static void BuildLayout(HWND hwnd) {
 		SIZE labelSz, valueSz;
 
 		sl->lenLabel = lstrlenW(g_statDefs[i].label);
-		sl->lenValue = lstrlenW(g_statDefs[i].value);
+		sl->lenValue = lstrlenW(g_statValues[i]);
 		GetTextExtentPoint32W(hdc, g_statDefs[i].label, sl->lenLabel, &labelSz);
-		GetTextExtentPoint32W(hdc, g_statDefs[i].value, sl->lenValue, &valueSz);
+		GetTextExtentPoint32W(hdc, g_statValues[i], sl->lenValue, &valueSz);
 
 		sl->y = top + i * lineR;
 		sl->xValue = right - valueSz.cx;
@@ -309,6 +312,36 @@ static void BuildLayout(HWND hwnd) {
 
 	SelectObject(hdc, prevFont);
 	ReleaseDC(hwnd, hdc);
+}
+
+static void UpdateSnapshot(HWND hwnd, const TrainerSnapshot *snapshot) {
+	int i;
+	BOOL changed = memcmp(g_snapshot.stats, snapshot->stats, sizeof snapshot->stats) != 0 ||
+		memcmp(g_snapshot.states, snapshot->states, sizeof snapshot->states) != 0 ||
+		g_snapshot.available != snapshot->available ||
+		g_snapshot.stats_available != snapshot->stats_available ||
+		g_snapshot.status != snapshot->status ||
+		wcscmp(g_snapshot.detail, snapshot->detail) != 0;
+
+	if (!changed) {
+		return;
+	}
+	g_snapshot = *snapshot;
+	for (i = 0; i < STAT_COUNT; ++i) {
+		if (snapshot->stats_available) {
+			trainer_format_stat(g_statValues[i], snapshot->stats[i]);
+		} else {
+			lstrcpyW(g_statValues[i], L"--");
+		}
+	}
+	BuildLayout(hwnd);
+	InvalidateRect(hwnd, NULL, FALSE);
+}
+
+static void RefreshTrainer(HWND hwnd) {
+	TrainerSnapshot snapshot;
+	trainer_refresh(&snapshot);
+	UpdateSnapshot(hwnd, &snapshot);
 }
 
 static void DrawContent(HDC hdc) {
@@ -324,7 +357,8 @@ static void DrawContent(HDC hdc) {
 
 	for (i = 0; i < ROW_COUNT; ++i) {
 		const RowLayout *rl = &g_rowLayout[i];
-		unsigned state = g_state[i];
+		BOOL available = (g_snapshot.available & (1u << i)) != 0;
+		unsigned state = available ? g_snapshot.states[i] : 0;
 		int count = state ? rl->nRuns : 1;
 
 		for (r = 0; r < count; ++r) {
@@ -342,7 +376,7 @@ static void DrawContent(HDC hdc) {
 					color = (state == (unsigned)(run->kind - 1)) ? COL_ON : COL_OFF;
 					break;
 			}
-			SetTextColor(hdc, color);
+			SetTextColor(hdc, available ? color : COL_GREY);
 			TextOutW(hdc, run->x, rl->y, run->text, run->len);
 		}
 	}
@@ -353,8 +387,14 @@ static void DrawContent(HDC hdc) {
 		SetTextColor(hdc, COL_LABEL);
 		TextOutW(hdc, sl->xLabel, sl->y, g_statDefs[i].label, sl->lenLabel);
 		SetTextColor(hdc, g_statDefs[i].color);
-		TextOutW(hdc, sl->xValue, sl->y, g_statDefs[i].value, sl->lenValue);
+		TextOutW(hdc, sl->xValue, sl->y, g_statValues[i], sl->lenValue);
 	}
+
+	SetRect(&rc, SCALE(PAD), SCALE(TOP + ROW_COUNT * LINE_LEFT + 24),
+		SCALE(320), g_versionY - SCALE(12));
+	SetTextColor(hdc, g_snapshot.status == TRAINER_ERROR ||
+		g_snapshot.status == TRAINER_UNSUPPORTED ? COL_RED : COL_LABEL);
+	DrawTextW(hdc, g_snapshot.detail, -1, &rc, DT_LEFT | DT_WORDBREAK | DT_NOPREFIX);
 
 	SelectObject(hdc, g_fontBold);
 	SetTextColor(hdc, COL_LABEL);
@@ -375,9 +415,12 @@ static int HitTest(int x, int y, int *outRun) {
 
 	for (i = 0; i < ROW_COUNT; ++i) {
 		const RowLayout *rl = &g_rowLayout[i];
-		unsigned state = g_state[i];
+		unsigned state = g_snapshot.states[i];
 		int count;
 
+		if (!(g_snapshot.available & (1u << i))) {
+			continue;
+		}
 		if (y < rl->y || y >= rl->y + g_textH) {
 			continue;
 		}
@@ -399,20 +442,16 @@ static int HitTest(int x, int y, int *outRun) {
 	return -1;
 }
 
-static void ApplyRun(int row, unsigned char kind) {
-	if (kind == KIND_LABEL) {
-		g_state[row] = g_state[row] ? 0 : 1;
-	} else {
-		uint8_t n = (uint8_t)(kind - 1);
-		g_state[row] = (g_state[row] == n) ? 0 : n;
+static void ApplyAction(HWND hwnd, int row, TrainerInput input) {
+	TrainerSnapshot snapshot;
+	BOOL ok;
+	if (!(g_snapshot.available & (1u << row))) {
+		return;
 	}
-}
-
-static void ApplyKey(int row) {
-	if (g_rowDefs[row].cyclic) {
-		g_state[row] = (uint8_t)((g_state[row] + 1u) & 3u);
-	} else {
-		g_state[row] ^= 1u;
+	ok = trainer_action((unsigned)row, input, &snapshot);
+	UpdateSnapshot(hwnd, &snapshot);
+	if (!ok) {
+		MessageBoxW(hwnd, snapshot.detail, APP_TITLE, MB_OK | MB_ICONERROR);
 	}
 }
 
@@ -423,9 +462,21 @@ static LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
 			GetClientRect(hwnd, &rc);
 			g_cx = rc.right;
 			g_cy = rc.bottom;
+			RefreshTrainer(hwnd);
 			BuildLayout(hwnd);
+			if (!SetTimer(hwnd, 1, 1000, NULL)) {
+				MessageBoxW(hwnd, L"Could not start the process refresh timer.",
+					APP_TITLE, MB_OK | MB_ICONERROR);
+				return -1;
+			}
 			return 0;
 		}
+
+		case WM_TIMER:
+			if (wParam == 1) {
+				RefreshTrainer(hwnd);
+			}
+			return 0;
 
 		case WM_SIZE:
 			g_cx = (int)(short)LOWORD(lParam);
@@ -472,8 +523,10 @@ static LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
 
 			SetFocus(hwnd);
 			if (row >= 0) {
-				ApplyRun(row, g_rowLayout[row].runs[run].kind);
-				InvalidateRect(hwnd, &g_rowLayout[row].bounds, FALSE);
+				unsigned char kind = g_rowLayout[row].runs[run].kind;
+				TrainerInput input = kind == KIND_LABEL ? TRAINER_LABEL :
+					(TrainerInput)(TRAINER_PERCENT_50 + kind - KIND_NUM0);
+				ApplyAction(hwnd, row, input);
 			}
 			return 0;
 		}
@@ -497,8 +550,7 @@ static LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
 				row = (int)wParam - VK_NUMPAD1;
 			}
 			if (row >= 0) {
-				ApplyKey(row);
-				InvalidateRect(hwnd, &g_rowLayout[row].bounds, FALSE);
+				ApplyAction(hwnd, row, TRAINER_KEY);
 				return 0;
 			}
 			if (wParam == VK_ESCAPE) {
@@ -530,6 +582,8 @@ static LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
 		}
 
 		case WM_DESTROY:
+			KillTimer(hwnd, 1);
+			trainer_close();
 			PostQuitMessage(0);
 			return 0;
 
@@ -600,6 +654,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrev, LPSTR cmdLine, int show
 		NULL
 	);
 	if (!hwnd) {
+		trainer_close();
 		return 1;
 	}
 
